@@ -21,11 +21,21 @@ full Lightroom clone — no catalogs, no cloud sync, no plugins, no masking,
 no presets marketplace, no tagging/keywords, unless the user asks for it
 by name. Default answer to "should we add X?" is no.
 
+edit-imporvement.md (repo root) is a second, accepted spec doc scoped
+narrowly to the editing/adjustment pipeline — RAW-aware decode via
+CIRAWFilter, splitting white balance into temperature/tint, a tone-curve
+contrast model, presence/detail/B&W/film-emulation panels, per its own
+"Recommended Build Order." Work drawn from it is in scope, but only one
+phase/step at a time in that doc's own order — never jump ahead to a later
+phase (e.g. film emulation) before the phases before it are done. It does
+not license anything outside that document (no catalogs/sync/etc. — the
+line above still holds).
+
 When asked to plan or scope something:
 1. Restate the request in one sentence.
-2. Check it against the feature list above — if it's not import, one of the
-   seven adjustments, export, the gallery, the app icon, or visual styling
-   of those features, flag it as out of scope and ask before including it.
+2. Check it against the feature list above (plus edit-imporvement.md for
+   editing-pipeline work) — if it's not one of those, flag it as out of
+   scope and ask before including it.
 3. Break the accepted scope into the smallest ordered set of concrete steps
    (files/modules to touch, in order). No speculative steps for features not
    asked for.

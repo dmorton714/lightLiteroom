@@ -132,8 +132,83 @@ Later, to get closer to Adobe Camera Raw:
 - HSL / Color Mixer
 - Color grading wheels or simpler shadows/midtones/highlights tint controls
 - Black and white mix
+- Black and white mode
+- Film emulation selections
 
-This can wait until the core RAW pipeline is strong.
+This can wait until the core RAW pipeline is strong, but the data model should leave room for these settings now.
+
+### Black And White Panel
+
+Add a dedicated black and white mode, similar to Adobe Camera Raw / Photoshop RAW.
+
+UI controls:
+
+- Black and white toggle
+- Red mix
+- Orange mix
+- Yellow mix
+- Green mix
+- Aqua mix
+- Blue mix
+- Purple mix
+- Magenta mix
+
+Implementation notes:
+
+- This should not be a simple desaturation filter.
+- Use channel mixing so users can control how each color maps into luminance.
+- Skin tones should be strongly affected by red/orange/yellow mix controls.
+- Skies should be strongly affected by aqua/blue controls.
+- Preserve the existing tonal controls after the black and white conversion.
+
+Suggested pipeline position:
+
+1. RAW decode / base color render
+2. exposure and white balance
+3. black and white color mix, if enabled
+4. contrast / tone curve
+5. highlights, shadows, blacks, whites
+6. grain, vignette, and film finishing
+
+### Film Emulation Panel
+
+Add selectable film looks in the UI.
+
+Initial UI:
+
+- Film profile picker
+- Film strength slider
+- Grain amount
+- Grain size
+- Fade amount
+- Vignette amount
+
+Possible starter profiles:
+
+- Clean Digital
+- Kodak Portra-style color
+- Kodak Gold-style warm color
+- Fujifilm-style color
+- Classic Chrome-style muted color
+- Tri-X-style black and white
+- Ilford HP5-style black and white
+- High Contrast Mono
+
+Implementation notes:
+
+- Avoid naming profiles as exact trademarked film stocks in the final UI unless we are comfortable with that. Internally we can use descriptive approximations like `warmPortrait`, `goldenNegative`, `mutedChrome`, and `classicMono`.
+- Each film profile should be a preset bundle, not a baked image filter.
+- Profiles can adjust tone curve, color matrix/HSL, saturation, color grading, grain, and vignette.
+- Film strength should blend the profile adjustments with the user's base edit.
+- Users should still be able to edit after selecting a profile.
+- Black and white film profiles should automatically enable black and white mode and set channel mix defaults.
+
+Good first implementation:
+
+- Add an enum for film profile.
+- Add `filmStrength`, `grainAmount`, `grainSize`, `fadeAmount`, and `vignetteAmount` to `AdjustmentSettings`.
+- Apply film look near the end of the pipeline, after core tonal correction but before final grain/vignette.
+- Build profile definitions as data so new looks can be added without rewriting pipeline logic.
 
 ### Optics Panel
 
@@ -244,6 +319,43 @@ Add controls that feel more like a RAW editor:
 - double-tap slider to reset
 - indicator when editing a RAW file vs JPEG
 
+### Phase 7: Add black and white editing
+
+Add a real black and white mode with color-channel mix controls.
+
+This should include:
+
+- black and white toggle
+- channel mix sliders
+- black and white presets
+- support for black and white film profiles
+
+The goal is to make black and white conversion feel intentional and photographic, not like saturation set to zero.
+
+### Phase 8: Add film emulation
+
+Add film profile selections to the UI.
+
+Start with a small, high-quality set:
+
+- neutral color
+- warm portrait color
+- golden negative color
+- muted chrome color
+- classic black and white
+- high contrast black and white
+
+Each profile should define:
+
+- tone curve
+- color response
+- saturation/vibrance behavior
+- optional split tone or color grading
+- grain defaults
+- vignette/fade defaults
+
+Film profiles should work as editable starting points, not destructive one-click filters.
+
 ## Success Criteria
 
 White balance:
@@ -279,5 +391,6 @@ User experience:
 5. Retune highlights, shadows, blacks, and whites.
 6. Add RAW detail controls.
 7. Add presence controls: texture, clarity, dehaze, vibrance, saturation.
-8. Add before/after and reset affordances.
-
+8. Add black and white mode with color mix controls.
+9. Add film emulation profiles and finishing controls.
+10. Add before/after and reset affordances.
