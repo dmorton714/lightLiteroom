@@ -10,3 +10,8 @@ blacks
 whites 
 
 we want to be able to then export the images to the device. 
+
+we want a gallery in the app so we can see the photos we've imported/edited. 
+
+we want an app icon/logo. 
+

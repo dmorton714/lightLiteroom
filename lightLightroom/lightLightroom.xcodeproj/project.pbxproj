@@ -12,6 +12,9 @@
 		8338657CA226C8B6C3BB503D /* AdjustmentSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF4930D2A4727E9859A3E3 /* AdjustmentSettings.swift */; };
 		839DCE0C99C33695B765804D /* AdjustmentPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA38B06E903A08AE3E9309 /* AdjustmentPipeline.swift */; };
 		A1AEC887CEA7758618DD2339 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7F39220FC6CFD38BAC84F6F /* Assets.xcassets */; };
+		379CFB2597CF4A1C9362F445 /* EditedPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = F353EF5559CD401695249C06 /* EditedPhoto.swift */; };
+		44059F74D59C4525A8488EA5 /* GalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A752412AF47E4DE1A18B72EC /* GalleryView.swift */; };
+		234D570329F74C87AAFA2A71 /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFE9E7594834949B8D66E74 /* ExportService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +24,9 @@
 		80AA38B06E903A08AE3E9309 /* AdjustmentPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdjustmentPipeline.swift; sourceTree = "<group>"; };
 		D7F39220FC6CFD38BAC84F6F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		160403660171653E2A419F33 /* lightLightroom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = lightLightroom.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F353EF5559CD401695249C06 /* EditedPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditedPhoto.swift; sourceTree = "<group>"; };
+		A752412AF47E4DE1A18B72EC /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
+		CEFE9E7594834949B8D66E74 /* ExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,6 +55,9 @@
 				61E57D4F59EE478B78286B68 /* ContentView.swift */,
 				19BF4930D2A4727E9859A3E3 /* AdjustmentSettings.swift */,
 				80AA38B06E903A08AE3E9309 /* AdjustmentPipeline.swift */,
+				F353EF5559CD401695249C06 /* EditedPhoto.swift */,
+				A752412AF47E4DE1A18B72EC /* GalleryView.swift */,
+				CEFE9E7594834949B8D66E74 /* ExportService.swift */,
 				D7F39220FC6CFD38BAC84F6F /* Assets.xcassets */,
 			);
 			path = lightLightroom;
@@ -135,6 +144,9 @@
 				D03032B066C0206B964EFC5C /* ContentView.swift in Sources */,
 				8338657CA226C8B6C3BB503D /* AdjustmentSettings.swift in Sources */,
 				839DCE0C99C33695B765804D /* AdjustmentPipeline.swift in Sources */,
+				379CFB2597CF4A1C9362F445 /* EditedPhoto.swift in Sources */,
+				44059F74D59C4525A8488EA5 /* GalleryView.swift in Sources */,
+				234D570329F74C87AAFA2A71 /* ExportService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -266,6 +278,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "lightLightroom saves your edited photos to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -292,6 +305,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "lightLightroom saves your edited photos to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
