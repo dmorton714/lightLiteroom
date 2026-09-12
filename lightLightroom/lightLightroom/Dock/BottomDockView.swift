@@ -23,6 +23,7 @@ struct BottomDockView: View {
     @Binding var isFilmstripMultiSelect: Bool
     @Binding var selectedFilmstripPhotoIDs: Set<EditedPhoto.ID>
     let bottomInset: CGFloat
+    let availableWidth: CGFloat
     let onExport: () -> Void
     let onToggleBeforeAfter: () -> Void
     /// Called whenever a photo is selected from the gallery or filmstrip,
@@ -32,6 +33,14 @@ struct BottomDockView: View {
     let onApplyToSelected: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var horizontalMargin: CGFloat {
+        min(Glass.spacing, max(Glass.compactSpacing, availableWidth * 0.035))
+    }
+
+    private var maxDockWidth: CGFloat {
+        max(0, availableWidth - horizontalMargin * 2 - Glass.compactSpacing * 2)
+    }
 
     var body: some View {
         VStack(spacing: Glass.compactSpacing) {
@@ -78,11 +87,13 @@ struct BottomDockView: View {
             }
         }
         .fixedSize(horizontal: false, vertical: true)
-        .padding(.horizontal, Glass.spacing)
+        .frame(maxWidth: maxDockWidth)
+        .padding(.horizontal, Glass.compactSpacing)
         .padding(.vertical, Glass.compactSpacing + 2)
         .darkDock()
         .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.7), value: isExporting)
         .padding(.bottom, bottomInset + Glass.compactSpacing)
+        .padding(.horizontal, horizontalMargin)
         .background(
             GeometryReader { proxy in
                 Color.clear.preference(key: DockHeightPreferenceKey.self, value: proxy.size.height)

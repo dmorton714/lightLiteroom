@@ -57,12 +57,22 @@ struct AdjustmentsPanelView: View {
                 Spacer(minLength: Glass.compactSpacing)
             }
         }
-        .frame(width: isLandscape ? Glass.panelWidthLandscape : availableSize.width)
+        .frame(width: layout.width)
         .frame(maxHeight: layout.maxHeight)
         .glassDockedPanel(corners: corners)
-        .padding(.bottom, dockReservedHeight)
-        .ignoresSafeArea(edges: isLandscape ? .trailing : .bottom)
+        .padding(.horizontal, isLandscape ? 0 : layout.edgePadding)
+        .padding(.trailing, isLandscape ? layout.edgePadding : 0)
+        .padding(.bottom, dockReservedHeight + layout.edgePadding)
         .offset(layout.clampedOffset(panelOffset + panelDragTranslation))
+        .onChange(of: availableSize) { _, _ in
+            panelOffset = layout.clampedOffset(panelOffset)
+        }
+        .onChange(of: dockReservedHeight) { _, _ in
+            panelOffset = layout.clampedOffset(panelOffset)
+        }
+        .onChange(of: isPanelCollapsed) { _, _ in
+            panelOffset = layout.clampedOffset(panelOffset)
+        }
         .transaction { transaction in
             // While actively dragging, the panel must track the finger 1:1
             // every frame — any inherited animation would make the live

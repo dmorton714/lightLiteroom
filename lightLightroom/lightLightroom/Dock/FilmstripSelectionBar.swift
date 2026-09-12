@@ -12,23 +12,30 @@ struct FilmstripSelectionBar: View {
     let onApplyToSelected: () -> Void
 
     var body: some View {
-        HStack(spacing: Glass.spacing) {
-            Button("Cancel") {
+        ViewThatFits(in: .horizontal) {
+            controls(spacing: Glass.spacing, compact: false)
+            controls(spacing: Glass.compactSpacing, compact: true)
+        }
+        .font(.subheadline)
+        .foregroundStyle(.white)
+    }
+
+    private func controls(spacing: CGFloat, compact: Bool) -> some View {
+        HStack(spacing: spacing) {
+            Button(compact ? "Cancel" : "Cancel") {
                 isFilmstripMultiSelect = false
                 selectedFilmstripPhotoIDs = []
             }
-            Spacer()
-            Button("Select All") {
+            Spacer(minLength: spacing)
+            Button(compact ? "All" : "Select All") {
                 selectedFilmstripPhotoIDs = Set(photos.map(\.id)).subtracting([currentPhotoID].compactMap { $0 })
             }
-            Spacer()
-            Button("Apply Edit to \(selectedFilmstripPhotoIDs.count) Photo\(selectedFilmstripPhotoIDs.count == 1 ? "" : "s")") {
+            Spacer(minLength: spacing)
+            Button(compact ? "Apply (\(selectedFilmstripPhotoIDs.count))" : "Apply Edit to \(selectedFilmstripPhotoIDs.count) Photo\(selectedFilmstripPhotoIDs.count == 1 ? "" : "s")") {
                 onApplyToSelected()
             }
             .disabled(selectedFilmstripPhotoIDs.isEmpty)
             .fontWeight(.semibold)
         }
-        .font(.subheadline)
-        .foregroundStyle(.white)
     }
 }

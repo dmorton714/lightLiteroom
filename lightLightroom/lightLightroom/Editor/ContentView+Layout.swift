@@ -23,12 +23,12 @@ extension ContentView {
                 }
             }
             .overlay(alignment: .bottom) {
-                dock(bottomInset: geometry.safeAreaInsets.bottom)
+                dock(bottomInset: geometry.safeAreaInsets.bottom, availableWidth: geometry.size.width)
             }
             .simultaneousGesture(swipeToSwitchPhoto)
     }
 
-    private func dock(bottomInset: CGFloat) -> some View {
+    private func dock(bottomInset: CGFloat, availableWidth: CGFloat) -> some View {
         BottomDockView(
             selectedItem: $selectedItem,
             photos: photos,
@@ -41,6 +41,7 @@ extension ContentView {
             isFilmstripMultiSelect: $isFilmstripMultiSelect,
             selectedFilmstripPhotoIDs: $selectedFilmstripPhotoIDs,
             bottomInset: bottomInset,
+            availableWidth: availableWidth,
             onExport: exportCurrentPhoto,
             onToggleBeforeAfter: toggleBeforeAfter,
             onSelectPhoto: { _ in scheduleRender() },

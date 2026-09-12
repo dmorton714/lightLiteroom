@@ -21,17 +21,27 @@ struct ToolbarButtonsRow: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        HStack(spacing: Glass.spacing) {
+        ViewThatFits(in: .horizontal) {
+            toolbarContent(spacing: Glass.spacing, showsDividers: true)
+            toolbarContent(spacing: Glass.compactSpacing, showsDividers: false)
+        }
+        .buttonStyle(.glassPress)
+        .foregroundStyle(.white)
+    }
+
+    @ViewBuilder
+    private func toolbarContent(spacing: CGFloat, showsDividers: Bool) -> some View {
+        HStack(spacing: spacing) {
             PhotosPicker(selection: $selectedItem, matching: .images) {
                 DockIcon("photo.on.rectangle")
             }
             .accessibilityLabel("Import Photo")
 
-            DockDivider()
+            if showsDividers { DockDivider() }
 
             Button(action: onExport) {
                 if isExporting {
-                    ProgressView().frame(width: DockIcon.size, height: DockIcon.size)
+                    ProgressView().frame(width: DockIcon.hitSize, height: DockIcon.hitSize)
                 } else {
                     DockIcon("square.and.arrow.down")
                 }
@@ -39,7 +49,7 @@ struct ToolbarButtonsRow: View {
             .disabled(currentPhoto == nil || isExporting)
             .accessibilityLabel("Export")
 
-            DockDivider()
+            if showsDividers { DockDivider() }
 
             Button(action: onToggleBeforeAfter) {
                 DockIcon(isShowingOriginal ? "eye.fill" : "eye")
@@ -47,7 +57,7 @@ struct ToolbarButtonsRow: View {
             .disabled(currentPhoto == nil)
             .accessibilityLabel(isShowingOriginal ? "Showing Original" : "Show Original")
 
-            DockDivider()
+            if showsDividers { DockDivider() }
 
             NavigationLink {
                 GalleryView(photos: photos, currentPhotoID: currentPhotoID) { id in
@@ -61,7 +71,7 @@ struct ToolbarButtonsRow: View {
             }
             .accessibilityLabel("Gallery")
 
-            DockDivider()
+            if showsDividers { DockDivider() }
 
             FilmstripToggleButton(
                 isFilmstripVisible: $isFilmstripVisible,
@@ -71,7 +81,5 @@ struct ToolbarButtonsRow: View {
             )
             .disabled(photos.isEmpty)
         }
-        .buttonStyle(.glassPress)
-        .foregroundStyle(.white)
     }
 }

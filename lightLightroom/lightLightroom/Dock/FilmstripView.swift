@@ -47,7 +47,6 @@ struct FilmstripView: View {
             }
             .padding(Glass.compactSpacing)
         }
-        .darkDock()
     }
 
     private func handleTap(on photo: EditedPhoto) {
