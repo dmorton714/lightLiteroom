@@ -25,9 +25,27 @@ enum Glass {
     /// Shared sizing for the floating adjustment panel so the portrait
     /// bottom tray and the landscape side panel read as one consistent
     /// docked-glass surface rather than two different components.
+    ///
+    /// These fractions were originally tuned against iPad's much taller
+    /// landscape height (~768-834pt) and its more generous portrait width.
+    /// The same percentages against an iPhone's short landscape height
+    /// (~330-430pt) can leave little to no margin, so the `Compact` variants
+    /// below are used instead whenever `horizontalSizeClass == .compact`
+    /// (see `panelHeightFraction(isLandscape:)`). Both sets are still backed
+    /// by an absolute safety clamp in `panelMaxHeight(isLandscape:
+    /// availableSize:)`, so even a fraction that's wrong for some device
+    /// can't push the panel past `panelMinVisibleMargin`.
     static let panelWidthLandscape: CGFloat = 320
     static let panelMaxHeightFractionPortrait: CGFloat = 0.46
     static let panelMaxHeightFractionLandscape: CGFloat = 0.82
+    /// Portrait fraction for compact-width screens (iPhone). Slightly taller
+    /// than iPad's, since iPhone portrait has no side-by-side layout option
+    /// the way landscape does, and there's more absolute height to spend.
+    static let panelMaxHeightFractionPortraitCompact: CGFloat = 0.5
+    /// Landscape fraction for compact-width screens (iPhone). Meaningfully
+    /// smaller than iPad's 0.82, because iPhone landscape height is the
+    /// device's short physical dimension.
+    static let panelMaxHeightFractionLandscapeCompact: CGFloat = 0.72
     static let panelHandleSize = CGSize(width: 36, height: 5)
 
     /// Approximate header-only height used to estimate the panel's footprint
@@ -42,6 +60,11 @@ enum Glass {
     static let dragTapThreshold: CGFloat = 8
     /// Height reserved below the adjustments panel's default position so it
     /// doesn't sit directly on top of the solid bottom toolbar by default.
+    /// Portrait only: the panel is bottom-docked there, sharing the same
+    /// edge as `bottomDock`. In landscape the panel is trailing-docked and
+    /// vertically centered, nowhere near the toolbar, so this must NOT be
+    /// applied there — doing so previously wasted this many points of an
+    /// iPhone's already-short landscape height for no reason.
     static let bottomToolbarReservedHeight: CGFloat = 64
 
     /// Height of the color-gradient capsule drawn behind the Temperature and
@@ -151,6 +174,7 @@ extension ButtonStyle where Self == GlassPressStyle {
 struct ContentView: View {
     @State private var selectedItem: PhotosPickerItem?
     @State private var photos: [EditedPhoto] = []
+    @State private var thumbnailQueue = ThumbnailCatchupQueue()
     @State private var currentPhotoID: EditedPhoto.ID?
     @State private var renderedPreview: UIImage?
     @State private var renderTask: Task<Void, Never>?
@@ -176,6 +200,15 @@ struct ContentView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
+    /// Supplementary signal (alongside the live `geometry.size`-based
+    /// `isLandscape` check, which stays the source of truth for orientation)
+    /// for which panel-sizing fraction to use: `.compact` on iPhone-class
+    /// widths, `.regular` on iPad. Never used in place of a `geometry.size`
+    /// check — see `panelMaxHeight(isLandscape:availableSize:)`'s absolute
+    /// safety clamp for why that still matters even when this misclassifies
+    /// an edge case (e.g. Plus/Max iPhones reporting `.regular` in
+    /// landscape).
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     private let context = CIContext()
 
@@ -224,6 +257,7 @@ struct ContentView: View {
                     id: record.id
                 )
             }
+            startThumbnailCatchup()
         }
         .onChange(of: selectedItem) { _, newItem in
             Task { await loadImage(from: newItem) }
@@ -362,6 +396,26 @@ struct ContentView: View {
         batchApplyMessage = "Applied edit to \(appliedCount) photo\(appliedCount == 1 ? "" : "s")."
         isFilmstripMultiSelect = false
         selectedFilmstripPhotoIDs = []
+        startThumbnailCatchup()
+    }
+
+    /// Kicks off a background, low-priority pass that fills in thumbnails
+    /// for any photo that doesn't have one yet (freshly loaded, just
+    /// imported, or nulled out by a batch apply) — see
+    /// `ThumbnailCatchupQueue`. Safe to call repeatedly; the queue tracks
+    /// what it's already attempted and skips the current photo, which the
+    /// interactive render path already covers.
+    private func startThumbnailCatchup() {
+        let snapshot = photos
+        let currentID = currentPhotoID
+        let queue = thumbnailQueue
+        Task.detached(priority: .background) {
+            await queue.run(photos: snapshot, skipping: currentID) { id, image in
+                guard let index = photos.firstIndex(where: { $0.id == id }) else { return }
+                guard photos[index].thumbnail == nil else { return }
+                photos[index].thumbnail = image
+            }
+        }
     }
 
     /// Single bottom dock combining the always-present toolbar buttons and
@@ -474,7 +528,18 @@ struct ContentView: View {
             Button {
                 withAnimation(reduceMotion ? nil : Glass.spring) {
                     isFilmstripVisible.toggle()
-                    if !isFilmstripVisible {
+                    if isFilmstripVisible {
+                        // Collapse the adjustments panel when opening the
+                        // filmstrip — on a phone-sized screen in portrait,
+                        // an expanded panel (already up to half the screen)
+                        // plus the filmstrip left too little of the photo
+                        // visible to actually compare/swap between photos,
+                        // which read as a full-screen takeover rather than
+                        // a compact dock. Only collapses, never force-
+                        // expands, so hiding the filmstrip doesn't
+                        // surprise the user by reopening the panel.
+                        isPanelCollapsed = true
+                    } else {
                         isFilmstripMultiSelect = false
                         selectedFilmstripPhotoIDs = []
                     }
@@ -495,9 +560,11 @@ struct ContentView: View {
     /// (a tray, like Photos' edit-mode controls) or the trailing edge in
     /// landscape by default — but user-repositionable via a drag on
     /// `panelHeader`, so it isn't fixed to that edge. A fixed bottom padding
-    /// (`Glass.bottomToolbarReservedHeight`) keeps its default position
-    /// clear of the solid bottom toolbar rather than stacking directly on
-    /// top of it. Same 8 slider bindings as before; only the
+    /// (`Glass.bottomToolbarReservedHeight`) keeps its default *portrait*
+    /// position clear of the solid bottom toolbar rather than stacking
+    /// directly on top of it; in landscape the panel is trailing-docked and
+    /// vertically centered, nowhere near the toolbar, so no bottom padding
+    /// is reserved there. Same 8 slider bindings as before; only the
     /// container/placement changed.
     private func adjustmentsPanel(isLandscape: Bool, availableSize: CGSize) -> some View {
         let corners = isLandscape
@@ -520,14 +587,50 @@ struct ContentView: View {
         }
         .frame(
             maxWidth: isLandscape ? Glass.panelWidthLandscape : .infinity,
-            maxHeight: isLandscape
-                ? availableSize.height * Glass.panelMaxHeightFractionLandscape
-                : availableSize.height * Glass.panelMaxHeightFractionPortrait
+            maxHeight: panelMaxHeight(isLandscape: isLandscape, availableSize: availableSize)
         )
         .glassDockedPanel(corners: corners)
-        .padding(.bottom, Glass.bottomToolbarReservedHeight)
+        .padding(.bottom, isLandscape ? 0 : Glass.bottomToolbarReservedHeight)
         .ignoresSafeArea(edges: isLandscape ? .trailing : .bottom)
         .offset(clampedPanelOffset(panelOffset + panelDragTranslation, availableSize: availableSize, isLandscape: isLandscape))
+    }
+
+    /// Which of `Glass`'s height fractions to use for the panel, branched on
+    /// `horizontalSizeClass` (`.compact` on iPhone-class widths, `.regular`
+    /// on iPad) rather than a raw device-idiom check, per SwiftUI
+    /// convention. `isLandscape` itself still comes from the live
+    /// `geometry.size` check at the call site, not from size class — size
+    /// class doesn't reliably track orientation on every iPhone model (e.g.
+    /// Plus/Max can report `.regular` in landscape).
+    private func panelHeightFraction(isLandscape: Bool) -> CGFloat {
+        let isCompact = horizontalSizeClass == .compact
+        if isLandscape {
+            return isCompact ? Glass.panelMaxHeightFractionLandscapeCompact : Glass.panelMaxHeightFractionLandscape
+        } else {
+            return isCompact ? Glass.panelMaxHeightFractionPortraitCompact : Glass.panelMaxHeightFractionPortrait
+        }
+    }
+
+    /// The panel's max height for a given orientation and `availableSize`,
+    /// used identically by both the panel's own `.frame(maxHeight:)` and by
+    /// `clampedPanelOffset`'s footprint estimate, so the two can never
+    /// disagree about how tall the panel actually is.
+    ///
+    /// Applies `panelHeightFraction`'s percentage first, then an absolute
+    /// safety clamp: even if the size-class-selected fraction turns out to
+    /// be too generous for some screen it wasn't tuned for (a misclassified
+    /// size class, an unusually short landscape height, etc.), the panel
+    /// plus its reserved bottom clearance can never consume so much of
+    /// `availableSize.height` that fewer than `Glass.panelMinVisibleMargin`
+    /// points remain for the photo behind it. This is what makes the sizing
+    /// correct by construction for the full iPhone/iPad, portrait/landscape
+    /// matrix rather than only for the specific dimensions it was tested
+    /// against.
+    private func panelMaxHeight(isLandscape: Bool, availableSize: CGSize) -> CGFloat {
+        let reserved = isLandscape ? 0 : Glass.bottomToolbarReservedHeight
+        let proposed = availableSize.height * panelHeightFraction(isLandscape: isLandscape)
+        let maxAllowed = availableSize.height - reserved - Glass.panelMinVisibleMargin
+        return max(0, min(proposed, maxAllowed))
     }
 
     /// Drag target and tap target for the panel: dragging moves the whole
@@ -618,17 +721,23 @@ struct ContentView: View {
     }
 
     /// Keeps the free-floating panel from being dragged fully off-screen:
-    /// the panel's approximate footprint (same sizing fractions it's framed
-    /// with) must keep at least `Glass.panelMinVisibleMargin` points within
-    /// `availableSize` in every direction. Approximate, not a measured
+    /// the panel's approximate footprint (same sizing this func shares with
+    /// `panelMaxHeight`, so the two can't disagree) must keep at least
+    /// `Glass.panelMinVisibleMargin` points within `availableSize` in every
+    /// direction. `availableSize` is passed in fresh from the live
+    /// `GeometryReader` on every call (panel-drag `onEnded`, and every body
+    /// re-evaluation via `adjustmentsPanel`'s `.offset(...)`) — never cached
+    /// — so this is always correct for whatever the device's actual current
+    /// size is, including a live rotation. Approximate, not a measured
     /// frame — enough to stop the panel from being lost off-screen without
     /// any extra geometry-reading infrastructure.
     private func clampedPanelOffset(_ proposed: CGSize, availableSize: CGSize, isLandscape: Bool) -> CGSize {
         let panelWidth = isLandscape ? Glass.panelWidthLandscape : availableSize.width
         let panelHeight = isPanelCollapsed
             ? Glass.collapsedPanelHeight
-            : availableSize.height * (isLandscape ? Glass.panelMaxHeightFractionLandscape : Glass.panelMaxHeightFractionPortrait)
-        let totalHeight = panelHeight + Glass.bottomToolbarReservedHeight
+            : panelMaxHeight(isLandscape: isLandscape, availableSize: availableSize)
+        let reservedHeight = isLandscape ? 0 : Glass.bottomToolbarReservedHeight
+        let totalHeight = panelHeight + reservedHeight
 
         let defaultX = isLandscape ? availableSize.width - panelWidth : (availableSize.width - panelWidth) / 2
         let defaultY = isLandscape ? (availableSize.height - totalHeight) / 2 : availableSize.height - totalHeight
@@ -923,8 +1032,15 @@ struct ContentView: View {
                         .frame(height: Glass.sliderGradientTrackHeight)
                         .accessibilityHidden(true)
                 }
+                // When a `trackGradient` is present, the stock `Slider`'s own
+                // solid filled-track color would otherwise paint over most of
+                // the gradient (everything left of the thumb), leaving only a
+                // sliver of the unfilled track showing the real colors. Make
+                // that fill transparent so the full two-color gradient reads
+                // across the entire track regardless of thumb position; the
+                // thumb itself is unaffected by tint and stays visible.
                 Slider(value: value, in: range)
-                    .tint(.white)
+                    .tint(trackGradient != nil ? .clear : .white)
                     .onTapGesture(count: 2) {
                         value.wrappedValue = defaultValue
                     }
@@ -959,6 +1075,7 @@ struct ContentView: View {
             currentPhotoID = photo.id
         }
         scheduleRender()
+        startThumbnailCatchup()
     }
 
     /// Cancels any in-flight preview render and starts a new one off the

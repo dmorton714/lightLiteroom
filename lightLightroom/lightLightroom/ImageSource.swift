@@ -49,6 +49,36 @@ enum ImageSource {
         }
     }
 
+    /// Longest edge, in pixels, for gallery/filmstrip thumbnails — much
+    /// smaller than `previewMaxDimension` since these only ever render at
+    /// 60-100pt on screen. Deliberately not routed through `previewImage`'s
+    /// 1024px/`RAWPreviewCache` path: that cache is a single-slot cache
+    /// keyed only on adjustment values, not size, so sharing it here could
+    /// serve the interactive editor a wrong-sized image or thrash its one
+    /// slot. Thumbnails always decode fresh, cheaply, uncached.
+    private static let thumbnailMaxDimension: CGFloat = 240
+    private static let thumbnailRAWScaleFactor: Float = 0.08
+
+    /// A small, cheap render suitable for gallery/filmstrip thumbnails.
+    /// Never touches `RAWPreviewCache` or `previewImage`'s decode path —
+    /// see `thumbnailMaxDimension`.
+    func thumbnailImage(adjustments: AdjustmentSettings) -> CIImage {
+        switch self {
+        case .data(let data, _, let isRAW, _):
+            guard isRAW else {
+                guard let image = CIImage(data: data) else { return .empty() }
+                return Self.downsampled(image, maxDimension: Self.thumbnailMaxDimension)
+            }
+            guard let filter = CIRAWFilter(imageData: data, identifierHint: nil) else {
+                return .empty()
+            }
+            Self.applyRAWAdjustments(adjustments, to: filter)
+            filter.scaleFactor = Self.thumbnailRAWScaleFactor
+            guard let output = filter.outputImage else { return .empty() }
+            return Self.rasterized(output)
+        }
+    }
+
     /// Runs `CIRAWFilter`'s demosaic and rasterizes the result into a
     /// concrete pixel-backed `CIImage` (rather than returning the lazy
     /// filter graph), so a cached result truly skips the demosaic on reuse

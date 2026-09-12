@@ -48,4 +48,8 @@ struct EditedPhoto: Identifiable {
 
     /// Downsampled image used to drive the fast live preview while editing.
     var previewSourceImage: CIImage { imageSource.previewImage(adjustments: settings, cache: rawPreviewCache) }
+
+    /// A small, cheap render for gallery/filmstrip thumbnails — see
+    /// `ImageSource.thumbnailImage`. Never touches `rawPreviewCache`.
+    var thumbnailSourceImage: CIImage { imageSource.thumbnailImage(adjustments: settings) }
 }

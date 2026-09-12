@@ -19,6 +19,7 @@
 		88A45532BCA9F1EF4D2CF0CE /* ImageSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8397D37494BE0AE36303A9 /* ImageSource.swift */; };
 		38A20399B2944663858A7DFD /* HistogramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB04DC562C0412D94204881 /* HistogramView.swift */; };
 		DDEC4678514E488DBEDAE2C8 /* PhotoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B3C949EC8D4497F8FDF8CFB /* PhotoStore.swift */; };
+		E19BA751B136213FC2A55DD6 /* ThumbnailCatchupQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCEE03DE440BCE6B02C470A /* ThumbnailCatchupQueue.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,7 @@
 		2A8397D37494BE0AE36303A9 /* ImageSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSource.swift; sourceTree = "<group>"; };
 		0EB04DC562C0412D94204881 /* HistogramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistogramView.swift; sourceTree = "<group>"; };
 		1B3C949EC8D4497F8FDF8CFB /* PhotoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStore.swift; sourceTree = "<group>"; };
+		5BCEE03DE440BCE6B02C470A /* ThumbnailCatchupQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailCatchupQueue.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +72,7 @@
 				2A8397D37494BE0AE36303A9 /* ImageSource.swift */,
 				0EB04DC562C0412D94204881 /* HistogramView.swift */,
 				1B3C949EC8D4497F8FDF8CFB /* PhotoStore.swift */,
+				5BCEE03DE440BCE6B02C470A /* ThumbnailCatchupQueue.swift */,
 				D7F39220FC6CFD38BAC84F6F /* Assets.xcassets */,
 			);
 			path = lightLightroom;
@@ -163,6 +166,7 @@
 				88A45532BCA9F1EF4D2CF0CE /* ImageSource.swift in Sources */,
 				38A20399B2944663858A7DFD /* HistogramView.swift in Sources */,
 				DDEC4678514E488DBEDAE2C8 /* PhotoStore.swift in Sources */,
+				E19BA751B136213FC2A55DD6 /* ThumbnailCatchupQueue.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
