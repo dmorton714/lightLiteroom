@@ -147,6 +147,7 @@ struct ContentView: View {
     @State private var currentPhotoID: EditedPhoto.ID?
     @State private var renderedPreview: UIImage?
     @State private var renderTask: Task<Void, Never>?
+    @State private var histogramBins: [Float] = []
     @State private var isExporting = false
     @State private var exportAlertMessage: String?
     @State private var isPanelCollapsed = false
@@ -154,18 +155,24 @@ struct ContentView: View {
     @GestureState private var panelDragTranslation: CGSize = .zero
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
 
     private let context = CIContext()
-
-    /// Longest edge, in pixels, of the downsampled image used to drive the
-    /// live preview while dragging sliders. Re-rendering this small image on
-    /// every slider tick stays fast; the full-resolution `sourceImage` is
-    /// kept untouched for later export.
-    private static let previewMaxDimension: CGFloat = 1024
 
     /// `CIRAWFilter.scaleFactor` used for RAW preview renders, kept low so
     /// dragging sliders stays responsive on full-size RAW files.
     private static let rawPreviewScale: CGFloat = 0.25
+
+    /// Delay before a scheduled render actually starts doing CoreImage work.
+    /// A fast slider drag fires many `onChange` ticks in quick succession;
+    /// without this, each tick raced to decode+render immediately, and
+    /// cancelling a tick already mid-render couldn't stop CoreImage's
+    /// in-flight work (RAW demosaic and `createCGImage` aren't
+    /// cooperatively cancellable), so overlapping renders piled up and
+    /// competed for the same CPU/GPU resources instead of one cleanly
+    /// superseding the next. Sleeping first means a superseded tick is
+    /// cancelled before it does any real work at all.
+    private static let renderDebounce: Duration = .milliseconds(120)
 
     var body: some View {
         NavigationStack {
@@ -191,11 +198,25 @@ struct ContentView: View {
         }
         .preferredColorScheme(.dark)
         .animation(reduceMotion ? nil : Glass.spring, value: currentPhoto != nil)
+        .task {
+            photos = PhotoStore.loadAll().map { record, data in
+                EditedPhoto(
+                    imageSource: .data(data, filenameHint: record.filenameHint, isRAW: record.isRAW, previewScale: CGFloat(record.previewScale)),
+                    settings: record.settings,
+                    id: record.id
+                )
+            }
+        }
         .onChange(of: selectedItem) { _, newItem in
             Task { await loadImage(from: newItem) }
         }
         .onChange(of: currentPhoto?.settings) { _, _ in
             scheduleRender()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .background || newPhase == .inactive else { return }
+            let settingsByID = Dictionary(uniqueKeysWithValues: photos.map { ($0.id, $0.settings) })
+            PhotoStore.updateSettings(settingsByID)
         }
         .alert(
             "Export",
@@ -331,6 +352,9 @@ struct ContentView: View {
         return VStack(spacing: 0) {
             panelHeader(isLandscape: isLandscape, availableSize: availableSize)
             if !isPanelCollapsed {
+                HistogramView(bins: histogramBins)
+                    .padding(.horizontal, Glass.spacing)
+                    .padding(.top, Glass.compactSpacing)
                 ScrollView {
                     slidersList
                 }
@@ -543,15 +567,20 @@ struct ContentView: View {
               let data = try? await item.loadTransferable(type: Data.self) else { return }
 
         let isRAW = item.supportedContentTypes.contains { $0.conforms(to: .rawImage) }
-        let photo: EditedPhoto
-        if isRAW {
-            let source = ImageSource.data(data, filenameHint: nil, isRAW: true, previewScale: Self.rawPreviewScale)
-            photo = EditedPhoto(imageSource: source)
-        } else {
-            guard let image = CIImage(data: data) else { return }
-            let preview = Self.downsampled(image, maxDimension: Self.previewMaxDimension)
-            photo = EditedPhoto(sourceImage: image, previewSourceImage: preview)
-        }
+        let previewScale = isRAW ? Self.rawPreviewScale : 1
+        let source = ImageSource.data(data, filenameHint: nil, isRAW: isRAW, previewScale: previewScale)
+        let photo = EditedPhoto(imageSource: source)
+
+        PhotoStore.append(
+            record: PhotoRecord(
+                id: photo.id,
+                filenameHint: nil,
+                isRAW: isRAW,
+                previewScale: Double(previewScale),
+                settings: photo.settings
+            ),
+            data: data
+        )
 
         withAnimation(reduceMotion ? nil : Glass.spring) {
             photos.append(photo)
@@ -562,26 +591,34 @@ struct ContentView: View {
 
     /// Cancels any in-flight preview render and starts a new one off the
     /// main thread, so dragging a slider never blocks the UI on a CoreImage
-    /// render. Renders the downsampled `previewSourceImage`, not the
-    /// full-resolution source, to keep every slider tick fast. The result
-    /// also becomes the current photo's gallery thumbnail.
+    /// render. Waits out `renderDebounce` before doing any real work, so a
+    /// superseded tick (the common case while actively dragging) is
+    /// cancelled while still asleep rather than after burning CPU/GPU on a
+    /// render nobody will see. Renders the downsampled `previewSourceImage`
+    /// (which itself skips the RAW demosaic on a cache hit — see
+    /// `RAWPreviewCache`), not the full-resolution source, to keep every
+    /// render fast. Also derives the live histogram from that same render
+    /// (see `LuminanceHistogram`) instead of a second pass, and the result
+    /// becomes the current photo's gallery thumbnail.
     private func scheduleRender() {
         renderTask?.cancel()
         guard let photo = currentPhoto else {
             renderedPreview = nil
+            histogramBins = []
             return
         }
-        let previewSourceImage = photo.previewSourceImage
-        let settings = photo.settings
-        let isRAW = photo.isRAW
         let context = context
-        let photoID = photo.id
         let animateCrossfade = !reduceMotion
         renderTask = Task.detached(priority: .userInitiated) {
+            try? await Task.sleep(for: Self.renderDebounce)
             guard !Task.isCancelled else { return }
-            let processed = AdjustmentPipeline.apply(settings, to: previewSourceImage, isRAW: isRAW)
-            guard let cgImage = context.createCGImage(processed, from: processed.extent),
-                  !Task.isCancelled else { return }
+            let previewSourceImage = photo.previewSourceImage
+            guard !Task.isCancelled else { return }
+            let processed = AdjustmentPipeline.apply(photo.settings, to: previewSourceImage, isRAW: photo.isRAW)
+            guard !Task.isCancelled,
+                  let cgImage = context.createCGImage(processed, from: processed.extent) else { return }
+            let bins = LuminanceHistogram.bins(from: processed, context: context)
+            guard !Task.isCancelled else { return }
             let image = UIImage(cgImage: cgImage)
             await MainActor.run {
                 if animateCrossfade {
@@ -591,7 +628,8 @@ struct ContentView: View {
                 } else {
                     renderedPreview = image
                 }
-                if let index = photos.firstIndex(where: { $0.id == photoID }) {
+                histogramBins = bins
+                if let index = photos.firstIndex(where: { $0.id == photo.id }) {
                     photos[index].thumbnail = image
                 }
             }
@@ -610,14 +648,6 @@ struct ContentView: View {
                 exportAlertMessage = error.localizedDescription
             }
         }
-    }
-
-    private static func downsampled(_ image: CIImage, maxDimension: CGFloat) -> CIImage {
-        let extent = image.extent
-        let longestEdge = max(extent.width, extent.height)
-        guard longestEdge > maxDimension else { return image }
-        let scale = maxDimension / longestEdge
-        return image.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
     }
 }
 

@@ -16,6 +16,8 @@
 		44059F74D59C4525A8488EA5 /* GalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A752412AF47E4DE1A18B72EC /* GalleryView.swift */; };
 		234D570329F74C87AAFA2A71 /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFE9E7594834949B8D66E74 /* ExportService.swift */; };
 		88A45532BCA9F1EF4D2CF0CE /* ImageSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8397D37494BE0AE36303A9 /* ImageSource.swift */; };
+		38A20399B2944663858A7DFD /* HistogramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB04DC562C0412D94204881 /* HistogramView.swift */; };
+		DDEC4678514E488DBEDAE2C8 /* PhotoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B3C949EC8D4497F8FDF8CFB /* PhotoStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +31,8 @@
 		A752412AF47E4DE1A18B72EC /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
 		CEFE9E7594834949B8D66E74 /* ExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportService.swift; sourceTree = "<group>"; };
 		2A8397D37494BE0AE36303A9 /* ImageSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSource.swift; sourceTree = "<group>"; };
+		0EB04DC562C0412D94204881 /* HistogramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistogramView.swift; sourceTree = "<group>"; };
+		1B3C949EC8D4497F8FDF8CFB /* PhotoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +65,8 @@
 				A752412AF47E4DE1A18B72EC /* GalleryView.swift */,
 				CEFE9E7594834949B8D66E74 /* ExportService.swift */,
 				2A8397D37494BE0AE36303A9 /* ImageSource.swift */,
+				0EB04DC562C0412D94204881 /* HistogramView.swift */,
+				1B3C949EC8D4497F8FDF8CFB /* PhotoStore.swift */,
 				D7F39220FC6CFD38BAC84F6F /* Assets.xcassets */,
 			);
 			path = lightLightroom;
@@ -151,6 +157,8 @@
 				44059F74D59C4525A8488EA5 /* GalleryView.swift in Sources */,
 				234D570329F74C87AAFA2A71 /* ExportService.swift in Sources */,
 				88A45532BCA9F1EF4D2CF0CE /* ImageSource.swift in Sources */,
+				38A20399B2944663858A7DFD /* HistogramView.swift in Sources */,
+				DDEC4678514E488DBEDAE2C8 /* PhotoStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

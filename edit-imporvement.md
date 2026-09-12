@@ -2,6 +2,30 @@
 
 Goal: improve the editor so RAW and JPEG adjustments feel closer to Adobe Camera Raw / Photoshop RAW editing, especially for white balance, contrast, tonal recovery, and export consistency.
 
+## Progress / Status (updated 2026-09-11)
+
+**Done:**
+- Phase 1 — RAW-aware `ImageSource` model (`.data` case, RAW vs JPEG/HEIC handling in one place).
+- Phase 2 — White balance split into `Temperature`/`Tint`, mapped to `CITemperatureAndTint` (JPEG) / `CIRAWFilter` (RAW).
+- Phase 3 — RAW-native temperature/tint/exposure wired into `CIRAWFilter` decode (not post-render), with the double-apply bug fixed (RAW no longer re-applies temp/tint/exposure after decode).
+- Phase 4 — Contrast replaced with a 5-point tone curve; highlights/shadows range bug fixed (each was only using half its slider's effective domain — real bug, not just tuning); blacks/whites shift range widened.
+- Phase 6 — RAW Detail panel: sharpness, luminance/color noise reduction, detail amount, lens correction toggle (all real `CIRAWFilter` properties, verified against the SDK header).
+- Phase 7 (pulled forward, user-authorized, v1 only) — Black & white toggle + 4-channel mixer (red/yellow/green/blue) via a custom `CIColorKernel` (genuine hue-weighted luminance mixing, not desaturation). Full 8-channel version (orange/aqua/purple/magenta) and B&W presets still open.
+- Also done, outside this doc's phases but along the way: full "liquid glass" UI redesign (full-bleed photo, floating draggable adjustments panel, solid bottom toolbar), live luminance histogram, RAW-decode-caching + debounce fix for render latency, and photo persistence across app relaunches (`PhotoStore.swift`).
+
+**Known limitation — accepted for now, fix later:**
+For Photos-library assets that pair a RAW file with a JPEG (common with camera-card imports), `PhotosPickerItem.loadTransferable(type: Data.self)` is not guaranteed to fetch the RAW representation specifically over the paired JPEG — Swift's default `Data: Transferable` conformance can't pin a `UTType`. Single-file RAW formats (ProRAW/DNG, most CR3) are unaffected; only RAW+JPEG pairs are at risk. **Fix later**: a custom `Transferable` wrapper that explicitly requests the `.rawImage` representation.
+
+**Not started:**
+- Phase 7 (remainder) — full 8-channel B&W mixer, B&W presets, B&W film-profile linkage.
+- Phase 8 (doc's Presence/Detail Panel) — texture, clarity, dehaze, vibrance, saturation.
+- Phase 9 — film emulation (profile picker, strength, grain, fade, vignette).
+- Phase 10 — before/after toggle, double-tap-to-reset, per-slider/per-panel reset buttons, RAW-vs-JPEG indicator badge.
+- Optics panel (chromatic aberration reduction, creative/correction vignette beyond lens correction).
+- Color panel (HSL/color mixer, split-toning) — doc says this can wait until the core pipeline is solid, which it now mostly is.
+
+**Next step when resumed:** Phase 8 in this doc's Recommended Build Order (labeled "presence controls" — texture, clarity, dehaze, vibrance, saturation) is next in sequence, per planner's one-phase-at-a-time rule.
+
 ## Current State
 
 The app already has a clean basic editing flow:

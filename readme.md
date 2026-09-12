@@ -15,3 +15,5 @@ we want a gallery in the app so we can see the photos we've imported/edited.
 
 we want an app icon/logo. 
 
+we want the photos we import to stay in the app across relaunches, not just for the current session. 
+

@@ -3,7 +3,7 @@ import Foundation
 /// The eight basic adjustments applied to an image, mirroring Lightroom's
 /// "Basic" panel. Each value ranges from -100...100 (0 is neutral), except
 /// `exposure`, which is in stops.
-struct AdjustmentSettings: Equatable {
+struct AdjustmentSettings: Equatable, Codable {
     var temperature: Double = 0
     var tint: Double = 0
     var exposure: Double = 0

@@ -1,11 +1,12 @@
 import CoreImage
 import UIKit
 
-/// One imported photo and its current edit state. Held in-session only —
-/// the app has no persistence layer, so photos are lost when the app
-/// relaunches.
+/// One imported photo and its current edit state. Persisted across app
+/// relaunches via `PhotoStore` (original `Data` + a settings manifest on
+/// disk, keyed by `id`), so `id` must stay stable between the in-memory
+/// instance and its saved record.
 struct EditedPhoto: Identifiable {
-    let id = UUID()
+    let id: UUID
 
     /// How this photo's pixels are decoded and rendered, so RAW vs JPEG/HEIC
     /// behavior lives in one place instead of being duplicated at every call
@@ -18,22 +19,20 @@ struct EditedPhoto: Identifiable {
     /// reused as the gallery thumbnail so it isn't rendered twice.
     var thumbnail: UIImage?
 
-    init(
-        sourceImage: CIImage,
-        previewSourceImage: CIImage,
-        settings: AdjustmentSettings = .neutral,
-        thumbnail: UIImage? = nil
-    ) {
-        self.imageSource = .decoded(full: sourceImage, preview: previewSourceImage)
-        self.settings = settings
-        self.thumbnail = thumbnail
-    }
+    /// Caches the last rasterized RAW decode for this photo (see
+    /// `RAWPreviewCache`), so changing a post-render-only slider doesn't
+    /// force a full re-demosaic. A reference type stored via `let` so it
+    /// survives this struct being copied when only `settings` changes (e.g.
+    /// `photos[i].settings = newValue`). No-ops for non-RAW sources.
+    private let rawPreviewCache = RAWPreviewCache()
 
     init(
         imageSource: ImageSource,
         settings: AdjustmentSettings = .neutral,
-        thumbnail: UIImage? = nil
+        thumbnail: UIImage? = nil,
+        id: UUID = UUID()
     ) {
+        self.id = id
         self.imageSource = imageSource
         self.settings = settings
         self.thumbnail = thumbnail
@@ -48,5 +47,5 @@ struct EditedPhoto: Identifiable {
     var sourceImage: CIImage { imageSource.fullResolutionImage(adjustments: settings) }
 
     /// Downsampled image used to drive the fast live preview while editing.
-    var previewSourceImage: CIImage { imageSource.previewImage(adjustments: settings) }
+    var previewSourceImage: CIImage { imageSource.previewImage(adjustments: settings, cache: rawPreviewCache) }
 }
