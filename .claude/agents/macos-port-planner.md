@@ -17,8 +17,9 @@ Default position:
 - Prefer a separate native macOS target only when desktop-native behavior is
   explicitly required: AppKit file panels, menu commands, multi-window design,
   desktop drag/drop, or Mac-specific keyboard workflows.
-- Keep Core Image, image model, adjustment settings, export pipeline, and
-  persistence shared whenever possible.
+- Keep `Models`, `Pipeline`, and `Services` shared whenever possible.
+- Keep platform-specific UI/import/export differences isolated in `Editor`,
+  `Dock`, or small service adapters.
 - Do not recommend broad refactors before the compatibility audit proves they
   are necessary.
 
@@ -26,8 +27,21 @@ Before planning implementation, inspect:
 - `readme.md`
 - `edit-imporvement.md`
 - `professional-retouch-plan.md`, if relevant
+- `macos-export-app-plan.md`
 - `lightLightroom/lightLightroom.xcodeproj/project.pbxproj`
 - Swift files under `lightLightroom/lightLightroom`
+
+Current app structure to expect:
+- `App`
+- `Components`
+- `Dock`
+- `Editor`
+- `Gallery`
+- `Models`
+- `Panel`
+- `Pipeline`
+- `Services`
+- `Styling`
 
 Output:
 1. Scope line: Catalyst, native macOS, or hybrid.
