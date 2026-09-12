@@ -25,14 +25,11 @@ enum Glass {
 /// Translucent glass card background for floating panels (the adjustment
 /// controls today; any future panel reuses the same tokens).
 struct GlassCard: ViewModifier {
-    var cornerRadius: CGFloat = Glass.cornerRadius
-    var material: Material = .regularMaterial
-
     func body(content: Content) -> some View {
         content
-            .background(material, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: Glass.cornerRadius, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                RoundedRectangle(cornerRadius: Glass.cornerRadius, style: .continuous)
                     .strokeBorder(.white.opacity(Glass.strokeOpacity), lineWidth: 0.5)
             )
             .shadow(color: Glass.shadowColor, radius: Glass.shadowRadius, x: 0, y: Glass.shadowY)
@@ -40,26 +37,23 @@ struct GlassCard: ViewModifier {
 }
 
 extension View {
-    func glassCard(cornerRadius: CGFloat = Glass.cornerRadius, material: Material = .regularMaterial) -> some View {
-        modifier(GlassCard(cornerRadius: cornerRadius, material: material))
+    func glassCard() -> some View {
+        modifier(GlassCard())
     }
 }
 
 /// Glass-material pill button style for primary actions (Import/Export,
 /// toolbar icons): depresses with a spring on press, respects Reduce Motion.
 struct GlassButtonStyle: ButtonStyle {
-    var cornerRadius: CGFloat = Glass.smallCornerRadius
-    var material: Material = .thinMaterial
-
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(.horizontal, Glass.spacing)
             .padding(.vertical, Glass.compactSpacing + 2)
-            .background(material, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: Glass.smallCornerRadius, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                RoundedRectangle(cornerRadius: Glass.smallCornerRadius, style: .continuous)
                     .strokeBorder(.white.opacity(Glass.strokeOpacity), lineWidth: 0.5)
             )
             .shadow(
@@ -158,7 +152,6 @@ struct ContentView: View {
                     }
                 }
                 .padding()
-                .animation(reduceMotion ? nil : Glass.spring, value: currentPhotoID)
             }
             .navigationTitle("lightLightroom")
             .toolbar {
@@ -245,7 +238,8 @@ struct ContentView: View {
     private var adjustmentControls: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Glass.spacing) {
-                adjustmentSlider("White Balance", value: currentSettings.whiteBalance, range: AdjustmentSettings.whiteBalanceRange)
+                adjustmentSlider("Temperature", value: currentSettings.temperature, range: AdjustmentSettings.temperatureRange)
+                adjustmentSlider("Tint", value: currentSettings.tint, range: AdjustmentSettings.tintRange)
                 adjustmentSlider("Exposure", value: currentSettings.exposure, range: AdjustmentSettings.exposureRange)
                 adjustmentSlider("Contrast", value: currentSettings.contrast, range: AdjustmentSettings.percentRange)
                 adjustmentSlider("Highlights", value: currentSettings.highlights, range: AdjustmentSettings.percentRange)
@@ -265,16 +259,20 @@ struct ContentView: View {
         range: ClosedRange<Double>
     ) -> some View {
         VStack(alignment: .leading, spacing: Glass.compactSpacing / 2) {
-            HStack {
+            HStack(spacing: Glass.compactSpacing) {
                 Text(title)
                     .font(.subheadline.weight(.medium))
-                Spacer()
+                Spacer(minLength: Glass.compactSpacing)
                 Text(value.wrappedValue, format: .number.precision(.fractionLength(1)))
                     .font(.subheadline.monospacedDigit())
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .fixedSize()
+                    .layoutPriority(1)
             }
             Slider(value: value, in: range)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func loadImage(from item: PhotosPickerItem?) async {

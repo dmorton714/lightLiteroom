@@ -15,6 +15,7 @@
 		379CFB2597CF4A1C9362F445 /* EditedPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = F353EF5559CD401695249C06 /* EditedPhoto.swift */; };
 		44059F74D59C4525A8488EA5 /* GalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A752412AF47E4DE1A18B72EC /* GalleryView.swift */; };
 		234D570329F74C87AAFA2A71 /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFE9E7594834949B8D66E74 /* ExportService.swift */; };
+		88A45532BCA9F1EF4D2CF0CE /* ImageSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8397D37494BE0AE36303A9 /* ImageSource.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		F353EF5559CD401695249C06 /* EditedPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditedPhoto.swift; sourceTree = "<group>"; };
 		A752412AF47E4DE1A18B72EC /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
 		CEFE9E7594834949B8D66E74 /* ExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportService.swift; sourceTree = "<group>"; };
+		2A8397D37494BE0AE36303A9 /* ImageSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSource.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +60,7 @@
 				F353EF5559CD401695249C06 /* EditedPhoto.swift */,
 				A752412AF47E4DE1A18B72EC /* GalleryView.swift */,
 				CEFE9E7594834949B8D66E74 /* ExportService.swift */,
+				2A8397D37494BE0AE36303A9 /* ImageSource.swift */,
 				D7F39220FC6CFD38BAC84F6F /* Assets.xcassets */,
 			);
 			path = lightLightroom;
@@ -147,6 +150,7 @@
 				379CFB2597CF4A1C9362F445 /* EditedPhoto.swift in Sources */,
 				44059F74D59C4525A8488EA5 /* GalleryView.swift in Sources */,
 				234D570329F74C87AAFA2A71 /* ExportService.swift in Sources */,
+				88A45532BCA9F1EF4D2CF0CE /* ImageSource.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,10 +1,11 @@
 import Foundation
 
-/// The seven basic adjustments applied to an image, mirroring Lightroom's
+/// The eight basic adjustments applied to an image, mirroring Lightroom's
 /// "Basic" panel. Each value ranges from -100...100 (0 is neutral), except
 /// `exposure`, which is in stops.
 struct AdjustmentSettings: Equatable {
-    var whiteBalance: Double = 0
+    var temperature: Double = 0
+    var tint: Double = 0
     var exposure: Double = 0
     var contrast: Double = 0
     var highlights: Double = 0
@@ -14,7 +15,8 @@ struct AdjustmentSettings: Equatable {
 
     static let neutral = AdjustmentSettings()
 
-    static let whiteBalanceRange: ClosedRange<Double> = -100...100
+    static let temperatureRange: ClosedRange<Double> = -100...100
+    static let tintRange: ClosedRange<Double> = -100...100
     static let exposureRange: ClosedRange<Double> = -3...3
     static let percentRange: ClosedRange<Double> = -100...100
 }

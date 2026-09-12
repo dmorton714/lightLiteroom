@@ -7,7 +7,7 @@ import CoreImage.CIFilterBuiltins
 enum AdjustmentPipeline {
     static func apply(_ settings: AdjustmentSettings, to image: CIImage) -> CIImage {
         var output = image
-        output = applyWhiteBalance(settings.whiteBalance, to: output)
+        output = applyTemperatureAndTint(temperature: settings.temperature, tint: settings.tint, to: output)
         output = applyExposure(settings.exposure, to: output)
         output = applyContrast(settings.contrast, to: output)
         output = applyHighlightsAndShadows(
@@ -23,13 +23,14 @@ enum AdjustmentPipeline {
         return output
     }
 
-    private static func applyWhiteBalance(_ value: Double, to image: CIImage) -> CIImage {
-        guard value != 0 else { return image }
+    private static func applyTemperatureAndTint(temperature: Double, tint: Double, to image: CIImage) -> CIImage {
+        guard temperature != 0 || tint != 0 else { return image }
         let filter = CIFilter.temperatureAndTint()
         filter.inputImage = image
         filter.neutral = CIVector(x: 6500, y: 0)
-        // Positive values warm the image (more orange); negative values cool it.
-        filter.targetNeutral = CIVector(x: 6500 - value * 20, y: 0)
+        // Positive temperature warms (more orange); negative cools.
+        // Positive tint pushes magenta; negative pushes green.
+        filter.targetNeutral = CIVector(x: 6500 - temperature * 20, y: tint * 0.5)
         return filter.outputImage ?? image
     }
 
