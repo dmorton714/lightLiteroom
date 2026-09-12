@@ -609,7 +609,7 @@ struct ContentView: View {
             }
         }
         .frame(
-            maxWidth: isLandscape ? Glass.panelWidthLandscape : .infinity,
+            maxWidth: isLandscape ? Glass.panelWidthLandscape : availableSize.width,
             maxHeight: panelMaxHeight(isLandscape: isLandscape, availableSize: availableSize)
         )
         .glassDockedPanel(corners: corners)
@@ -755,6 +755,12 @@ struct ContentView: View {
     /// frame — enough to stop the panel from being lost off-screen without
     /// any extra geometry-reading infrastructure.
     private func clampedPanelOffset(_ proposed: CGSize, availableSize: CGSize, isLandscape: Bool) -> CGSize {
+        // Phone-sized screens don't have room to spare for a free-floating
+        // panel, and the drag/clamp math here has twice now produced a
+        // wrong resting position on compact width — always docking there
+        // (no drag) sidesteps that whole bug class rather than chasing
+        // another edge case in this formula.
+        guard horizontalSizeClass != .compact else { return .zero }
         let panelWidth = isLandscape ? Glass.panelWidthLandscape : availableSize.width
         let panelHeight = isPanelCollapsed
             ? Glass.collapsedPanelHeight
