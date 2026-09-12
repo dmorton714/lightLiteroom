@@ -235,6 +235,15 @@ struct ContentView: View {
 
                 photoLayer
                     .ignoresSafeArea()
+                    .gesture(
+                        DragGesture(minimumDistance: 40)
+                            .onEnded { value in
+                                let horizontal = value.translation.width
+                                let vertical = value.translation.height
+                                guard abs(horizontal) > abs(vertical) * 1.5 else { return }
+                                switchToAdjacentPhoto(direction: horizontal < 0 ? 1 : -1)
+                            }
+                    )
                     .overlay(alignment: isLandscape ? .trailing : .bottom) {
                         if currentPhoto != nil {
                             adjustmentsPanel(isLandscape: isLandscape, availableSize: geometry.size)
@@ -418,6 +427,19 @@ struct ContentView: View {
         }
     }
 
+    /// Swipe left/right on the photo to move to the next/previous photo in
+    /// `photos`, without needing to open the filmstrip or gallery — `offset`
+    /// is `1` for next (swipe left) or `-1` for previous (swipe right). A
+    /// no-op with fewer than two photos.
+    private func switchToAdjacentPhoto(direction offset: Int) {
+        guard photos.count > 1, let currentPhotoIndex else { return }
+        let newIndex = (currentPhotoIndex + offset + photos.count) % photos.count
+        withAnimation(reduceMotion ? nil : Glass.spring) {
+            currentPhotoID = photos[newIndex].id
+        }
+        scheduleRender()
+    }
+
     /// Single bottom dock combining the always-present toolbar buttons and
     /// (when toggled) the filmstrip's selection bar + strip into ONE shared
     /// glass surface, so showing the filmstrip reads as the dock growing
@@ -430,6 +452,7 @@ struct ContentView: View {
     /// between two different shape types.
     private func bottomDock(bottomInset: CGFloat) -> some View {
         VStack(spacing: Glass.compactSpacing) {
+            bottomToolbarButtons
             if isFilmstripVisible && !photos.isEmpty {
                 Group {
                     if isFilmstripMultiSelect {
@@ -450,8 +473,8 @@ struct ContentView: View {
                 }
                 .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
             }
-            bottomToolbarButtons
         }
+        .fixedSize(horizontal: false, vertical: true)
         .padding(.horizontal, Glass.spacing)
         .padding(.vertical, Glass.compactSpacing + 2)
         .background(Color.black.opacity(0.85), in: RoundedRectangle(cornerRadius: Glass.cornerRadius, style: .continuous))
