@@ -2,7 +2,9 @@
 
 Goal: improve the editor so RAW and JPEG adjustments feel closer to Adobe Camera Raw / Photoshop RAW editing, especially for white balance, contrast, tonal recovery, and export consistency.
 
-## Progress / Status (updated 2026-09-11)
+## Progress / Status (updated 2026-09-12)
+
+**The full 10-phase Recommended Build Order in this doc is now complete.** Everything below Phase 9 in "Done" plus Phase 10 (the last remaining phase) has landed. Remaining work is either explicitly deferred earlier in this doc (see "Deferred / out of scope" below) or whatever the user asks for next — there is no more unbuilt work from the original build order.
 
 **Done:**
 - Phase 1 — RAW-aware `ImageSource` model (`.data` case, RAW vs JPEG/HEIC handling in one place).
@@ -10,21 +12,27 @@ Goal: improve the editor so RAW and JPEG adjustments feel closer to Adobe Camera
 - Phase 3 — RAW-native temperature/tint/exposure wired into `CIRAWFilter` decode (not post-render), with the double-apply bug fixed (RAW no longer re-applies temp/tint/exposure after decode).
 - Phase 4 — Contrast replaced with a 5-point tone curve; highlights/shadows range bug fixed (each was only using half its slider's effective domain — real bug, not just tuning); blacks/whites shift range widened.
 - Phase 6 — RAW Detail panel: sharpness, luminance/color noise reduction, detail amount, lens correction toggle (all real `CIRAWFilter` properties, verified against the SDK header).
-- Phase 7 (pulled forward, user-authorized, v1 only) — Black & white toggle + 4-channel mixer (red/yellow/green/blue) via a custom `CIColorKernel` (genuine hue-weighted luminance mixing, not desaturation). Full 8-channel version (orange/aqua/purple/magenta) and B&W presets still open.
+- Phase 7 (pulled forward, user-authorized) — Black & white toggle + full 8-channel mixer (red/orange/yellow/green/aqua/blue/purple/magenta) via a custom `CIColorKernel` (genuine hue-weighted luminance mixing, not desaturation, triangular interpolation between 8 band centers spaced around the hue wheel). Plus a small `BlackAndWhitePreset` enum (High Contrast, Soft/Classic, Deep Shadows) with a one-tap button row that stamps all 8 mix values and enables black and white mode. Black and white film-profile linkage is explicitly deferred to Phase 9 (film emulation) — not part of this pass.
+- Phase 8 — Presence panel: texture, clarity, dehaze, vibrance, saturation, applied post-render (for RAW and non-RAW alike) as a new step after the existing tonal controls in `AdjustmentPipeline`. Texture and clarity use `CIUnsharpMask` at a fine vs. broad radius respectively (fine detail vs. local contrast); dehaze approximates haze removal by reusing the same broad-radius local-contrast boost plus a small extra `CIColorControls` contrast bump (a real approximation, not true haze removal — no depth/atmosphere estimation, per the doc's own accepted hedge); vibrance uses the built-in `CIVibrance` filter; saturation uses `CIColorControls.saturation` remapped from the -100...100 UI range onto its native 0...2 domain. New "Presence" section added to `ContentView`'s adjustments panel, shown unconditionally (not RAW-gated).
 - Also done, outside this doc's phases but along the way: full "liquid glass" UI redesign (full-bleed photo, floating draggable adjustments panel, solid bottom toolbar), live luminance histogram, RAW-decode-caching + debounce fix for render latency, and photo persistence across app relaunches (`PhotoStore.swift`).
+- Phase 9 — Film emulation: a `FilmProfile` enum (`none`/Clean Digital, `warmPortrait`, `goldenNegative`, `mutedChrome`, `classicMono`, `highContrastMono` — six of the doc's suggested starter set, non-trademarked internal names, `.none` as the neutral default) plus `filmStrength`, `grainAmount`, `grainSize`, `fadeAmount`, `vignetteAmount` on `AdjustmentSettings`. Each profile is a pure-data `Adjustments` bundle (contrast/saturation/temperature/tint bias plus suggested grain/fade/vignette defaults and, for the two mono profiles, forced B&W + channel-mix defaults) — not a separate filter pipeline; `applyFilmProfile` blends it into the existing `applyContrast`/`applyTemperatureAndTint`/`applySaturation` machinery scaled by `filmStrength`. Applied near the end of the pipeline (after presence, before fade/grain/vignette), matching the doc's stated order. Grain uses `CIRandomGenerator` softened with `CIGaussianBlur` (size controls blur radius), desaturated and alpha-scaled by amount, composited over the image — a believable approximation, not a physically accurate simulator. Fade lifts the tone curve's black point. Vignette uses the built-in `CIVignette` filter. Selecting a profile (`FilmProfile.apply(to:)`) sets `filmStrength` to 100, stamps suggested grain/fade/vignette values, and for `classicMono`/`highContrastMono` also sets `isBlackAndWhite = true` plus channel-mix defaults — picking up the B&W film-profile linkage deferred from Phase 7. Users can keep editing every slider afterward; nothing is locked. New "Film" section added to `ContentView`'s adjustments panel: a scrollable profile-picker button row plus five sliders, with `filmStrength` shown only once a non-`.none` profile is selected (grain/fade/vignette stay visible always, as independent finishing controls).
+- Phase 10 (final phase) — before/after and reset affordances, all in `ContentView.swift`:
+  - **Reset**: a global "Reset All" button in the panel header (next to "Adjust", beside the new RAW/JPEG badge) sets the whole `AdjustmentSettings` back to `.neutral`; the three sectioned panels that already have a header — Presence, Film, RAW Detail — each get their own small "Reset" button that resets only that section's fields (the ungrouped Basic-8 and B&W blocks have no header to hang a per-section button on, so they're covered by "Reset All" only, per planner's call not to add a new header just to host a button).
+  - **Before/after toggle**: an eye-icon button in the bottom toolbar (between Export and Gallery) tap-toggles between the live edit and a one-shot render of the same photo with `.neutral` settings (`showOriginalPreview`). Deliberately a separate, narrower render path from the live-preview `scheduleRender` — it only ever sets `renderedPreview`, never `photo.settings`/`histogramBins`/the gallery `thumbnail` — so toggling to "before" can never be mistaken for, or accidentally persisted as, a real edit (`PhotoStore.updateSettings` on backgrounding only ever sees the real `photo.settings`, untouched by this toggle). Automatically snaps back to "after" on any real settings change or photo switch, so the toggle icon and displayed image can't drift out of sync.
+  - **Double-tap slider to reset**: `adjustmentSlider` takes a `defaultValue: Double = 0` parameter and double-tapping the slider resets it to that value; every call site relies on the default of 0 except `Grain Size`, which passes `defaultValue: 50` to match its actual neutral default.
+  - **RAW vs JPEG indicator**: a small "RAW"/"JPEG" text badge next to "Adjust" in the panel header, driven directly by `photo.isRAW`.
+  - Known accessibility gap, not fixed in this pass: `panelHeader`'s outer `VStack` carries `.accessibilityElement(children: .combine)` (pre-existing, for the collapse/expand VoiceOver action), which merges all its children — including the new "Reset All" button and RAW/JPEG badge — into one VoiceOver element. Sighted/touch use of Reset All works correctly (verified via `.highPriorityGesture` beating the header's own drag-to-move gesture), but VoiceOver users currently have no separate way to activate "Reset All" specifically. Fixing this would mean restructuring the header's accessibility tree beyond this phase's scope.
 
 **Known limitation — accepted for now, fix later:**
 For Photos-library assets that pair a RAW file with a JPEG (common with camera-card imports), `PhotosPickerItem.loadTransferable(type: Data.self)` is not guaranteed to fetch the RAW representation specifically over the paired JPEG — Swift's default `Data: Transferable` conformance can't pin a `UTType`. Single-file RAW formats (ProRAW/DNG, most CR3) are unaffected; only RAW+JPEG pairs are at risk. **Fix later**: a custom `Transferable` wrapper that explicitly requests the `.rawImage` representation.
 
-**Not started:**
-- Phase 7 (remainder) — full 8-channel B&W mixer, B&W presets, B&W film-profile linkage.
-- Phase 8 (doc's Presence/Detail Panel) — texture, clarity, dehaze, vibrance, saturation.
-- Phase 9 — film emulation (profile picker, strength, grain, fade, vignette).
-- Phase 10 — before/after toggle, double-tap-to-reset, per-slider/per-panel reset buttons, RAW-vs-JPEG indicator badge.
-- Optics panel (chromatic aberration reduction, creative/correction vignette beyond lens correction).
-- Color panel (HSL/color mixer, split-toning) — doc says this can wait until the core pipeline is solid, which it now mostly is.
+**Deferred / out of scope (not part of the 10-phase build order, or explicitly punted earlier in this doc):**
+- The RAW+JPEG Photos-pairing limitation just above.
+- Optics panel (chromatic aberration reduction, creative/correction vignette beyond the existing lens-correction toggle) — never started.
+- Color panel (HSL/color mixer, split-toning) — never started; the doc always said this could wait until the core pipeline was solid.
+- The VoiceOver/"Reset All" accessibility gap noted above.
 
-**Next step when resumed:** Phase 8 in this doc's Recommended Build Order (labeled "presence controls" — texture, clarity, dehaze, vibrance, saturation) is next in sequence, per planner's one-phase-at-a-time rule.
+**Next step when resumed:** The core `edit-imporvement.md` build order (all 10 phases) is complete. Remaining items are the explicitly-deferred ones listed above, or whatever the user requests next.
 
 ## Current State
 
@@ -119,6 +127,16 @@ This should move the app closer to Photoshop RAW editor basics.
 - Shadows
 - Whites
 - Blacks
+
+Implementation note (added 2026-09-12, user-requested): the Temperature and Tint
+sliders should show a color gradient on their track so the user can see at a
+glance what color they're balancing toward/away from — Temperature: blue (cool)
+to orange (warm); Tint: green to magenta. SwiftUI's stock `Slider` doesn't
+support a gradient track fill, so this needs a small custom slider treatment
+(e.g. a `LinearGradient` drawn behind/under the existing track, sized to the
+slider's bounds) — reuse the existing `adjustmentSlider` helper's structure,
+just for these two controls, not a full custom slider control for every
+slider in the panel.
 
 ### Presence / Detail Panel
 

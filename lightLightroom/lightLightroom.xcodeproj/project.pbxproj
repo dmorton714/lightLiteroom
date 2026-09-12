@@ -14,6 +14,7 @@
 		A1AEC887CEA7758618DD2339 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7F39220FC6CFD38BAC84F6F /* Assets.xcassets */; };
 		379CFB2597CF4A1C9362F445 /* EditedPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = F353EF5559CD401695249C06 /* EditedPhoto.swift */; };
 		44059F74D59C4525A8488EA5 /* GalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A752412AF47E4DE1A18B72EC /* GalleryView.swift */; };
+		F1A2C0571FDFBBB23FDCA7ED /* FilmstripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8167127F1734C98FD0D14983 /* FilmstripView.swift */; };
 		234D570329F74C87AAFA2A71 /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFE9E7594834949B8D66E74 /* ExportService.swift */; };
 		88A45532BCA9F1EF4D2CF0CE /* ImageSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8397D37494BE0AE36303A9 /* ImageSource.swift */; };
 		38A20399B2944663858A7DFD /* HistogramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB04DC562C0412D94204881 /* HistogramView.swift */; };
@@ -29,6 +30,7 @@
 		160403660171653E2A419F33 /* lightLightroom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = lightLightroom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F353EF5559CD401695249C06 /* EditedPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditedPhoto.swift; sourceTree = "<group>"; };
 		A752412AF47E4DE1A18B72EC /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
+		8167127F1734C98FD0D14983 /* FilmstripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmstripView.swift; sourceTree = "<group>"; };
 		CEFE9E7594834949B8D66E74 /* ExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportService.swift; sourceTree = "<group>"; };
 		2A8397D37494BE0AE36303A9 /* ImageSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSource.swift; sourceTree = "<group>"; };
 		0EB04DC562C0412D94204881 /* HistogramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistogramView.swift; sourceTree = "<group>"; };
@@ -63,6 +65,7 @@
 				80AA38B06E903A08AE3E9309 /* AdjustmentPipeline.swift */,
 				F353EF5559CD401695249C06 /* EditedPhoto.swift */,
 				A752412AF47E4DE1A18B72EC /* GalleryView.swift */,
+				8167127F1734C98FD0D14983 /* FilmstripView.swift */,
 				CEFE9E7594834949B8D66E74 /* ExportService.swift */,
 				2A8397D37494BE0AE36303A9 /* ImageSource.swift */,
 				0EB04DC562C0412D94204881 /* HistogramView.swift */,
@@ -155,6 +158,7 @@
 				839DCE0C99C33695B765804D /* AdjustmentPipeline.swift in Sources */,
 				379CFB2597CF4A1C9362F445 /* EditedPhoto.swift in Sources */,
 				44059F74D59C4525A8488EA5 /* GalleryView.swift in Sources */,
+				F1A2C0571FDFBBB23FDCA7ED /* FilmstripView.swift in Sources */,
 				234D570329F74C87AAFA2A71 /* ExportService.swift in Sources */,
 				88A45532BCA9F1EF4D2CF0CE /* ImageSource.swift in Sources */,
 				38A20399B2944663858A7DFD /* HistogramView.swift in Sources */,

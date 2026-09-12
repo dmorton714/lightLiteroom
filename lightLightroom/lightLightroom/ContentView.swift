@@ -43,6 +43,13 @@ enum Glass {
     /// Height reserved below the adjustments panel's default position so it
     /// doesn't sit directly on top of the solid bottom toolbar by default.
     static let bottomToolbarReservedHeight: CGFloat = 64
+
+    /// Height of the color-gradient capsule drawn behind the Temperature and
+    /// Tint sliders (`adjustmentSlider`'s `trackGradient` parameter) — a
+    /// white-balance-only visual aid, not a general slider restyle. Sized to
+    /// read as a thin colored track roughly matching the stock `Slider`'s own
+    /// track, not a random bar.
+    static let sliderGradientTrackHeight: CGFloat = 6
 }
 
 /// Componentwise addition so panel drag offsets can be composed from a
@@ -153,6 +160,19 @@ struct ContentView: View {
     @State private var isPanelCollapsed = false
     @State private var panelOffset: CGSize = .zero
     @GestureState private var panelDragTranslation: CGSize = .zero
+    /// Before/after toggle state: while `true`, `renderedPreview` shows a
+    /// one-shot render of the photo with `.neutral` settings (see
+    /// `showOriginalPreview`) instead of the live edit. Never touches
+    /// `photo.settings`, so it can't be accidentally persisted.
+    @State private var isShowingOriginal = false
+    /// Whether the in-editor filmstrip (quick photo-switching strip docked
+    /// above `bottomToolbar`) is visible.
+    @State private var isFilmstripVisible = false
+    /// Entered via long-press on a filmstrip thumbnail; lets the user pick
+    /// other photos to batch-apply the current photo's edit settings onto.
+    @State private var isFilmstripMultiSelect = false
+    @State private var selectedFilmstripPhotoIDs: Set<EditedPhoto.ID> = []
+    @State private var batchApplyMessage: String?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
@@ -189,9 +209,7 @@ struct ContentView: View {
                         }
                     }
                     .overlay(alignment: .bottom) {
-                        bottomToolbar
-                            .padding(.horizontal, Glass.spacing)
-                            .padding(.bottom, bottomInset + Glass.compactSpacing)
+                        bottomDock(bottomInset: bottomInset)
                     }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -211,7 +229,14 @@ struct ContentView: View {
             Task { await loadImage(from: newItem) }
         }
         .onChange(of: currentPhoto?.settings) { _, _ in
+            // Any real settings change (including a slider's own
+            // double-tap-to-reset) ends a before/after preview, so the
+            // toggle's icon and the displayed image never fall out of sync.
+            isShowingOriginal = false
             scheduleRender()
+        }
+        .onChange(of: currentPhotoID) { _, _ in
+            isShowingOriginal = false
         }
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .background || newPhase == .inactive else { return }
@@ -228,6 +253,17 @@ struct ContentView: View {
             Button("OK", role: .cancel) { exportAlertMessage = nil }
         } message: {
             Text(exportAlertMessage ?? "")
+        }
+        .alert(
+            "Batch Edit",
+            isPresented: Binding(
+                get: { batchApplyMessage != nil },
+                set: { isPresented in if !isPresented { batchApplyMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) { batchApplyMessage = nil }
+        } message: {
+            Text(batchApplyMessage ?? "")
         }
     }
 
@@ -278,12 +314,107 @@ struct ContentView: View {
         .clipped()
     }
 
-    /// Compact bar docked to the bottom of the photo with a solid (non-
-    /// translucent) background, so Import/Export/Gallery stay readable
-    /// against any photo content — unlike the rest of the UI, this one
-    /// intentionally opts out of the glass-material language per user
-    /// feedback that the translucent version was hard to see.
-    private var bottomToolbar: some View {
+    /// Contextual bar shown above the filmstrip while multi-select is
+    /// active, for batch-applying the current photo's edit settings onto
+    /// the selected other photos. Plain content — no background/shadow of
+    /// its own — since it lives inside `bottomDock`'s single shared glass
+    /// surface rather than floating as its own panel.
+    private var filmstripSelectionBar: some View {
+        HStack(spacing: Glass.spacing) {
+            Button("Cancel") {
+                isFilmstripMultiSelect = false
+                selectedFilmstripPhotoIDs = []
+            }
+            Spacer()
+            Button("Select All") {
+                selectedFilmstripPhotoIDs = Set(photos.map(\.id)).subtracting([currentPhotoID].compactMap { $0 })
+            }
+            Spacer()
+            Button("Apply Edit to \(selectedFilmstripPhotoIDs.count) Photo\(selectedFilmstripPhotoIDs.count == 1 ? "" : "s")") {
+                applyCurrentSettingsToSelected()
+            }
+            .disabled(selectedFilmstripPhotoIDs.isEmpty)
+            .fontWeight(.semibold)
+        }
+        .font(.subheadline)
+        .foregroundStyle(.white)
+    }
+
+    /// Copies the current photo's edit settings onto every selected
+    /// filmstrip photo. Nulls out each target's cached thumbnail rather
+    /// than re-rendering it immediately — `scheduleRender()` already only
+    /// ever renders one photo at a time (the RAW-decode cache and debounce
+    /// exist specifically to keep that cheap), so re-rendering N photos
+    /// here at once would reintroduce the exact perf cliff that work
+    /// avoided. The thumbnail regenerates the normal way next time that
+    /// photo becomes current; settings persist regardless via the existing
+    /// scenePhase-triggered `PhotoStore.updateSettings`, which already
+    /// saves every photo's settings, not just the current one.
+    private func applyCurrentSettingsToSelected() {
+        guard let sourceSettings = currentPhoto?.settings else { return }
+        var appliedCount = 0
+        for id in selectedFilmstripPhotoIDs where id != currentPhotoID {
+            guard let index = photos.firstIndex(where: { $0.id == id }) else { continue }
+            photos[index].settings = sourceSettings
+            photos[index].thumbnail = nil
+            appliedCount += 1
+        }
+        batchApplyMessage = "Applied edit to \(appliedCount) photo\(appliedCount == 1 ? "" : "s")."
+        isFilmstripMultiSelect = false
+        selectedFilmstripPhotoIDs = []
+    }
+
+    /// Single bottom dock combining the always-present toolbar buttons and
+    /// (when toggled) the filmstrip's selection bar + strip into ONE shared
+    /// glass surface, so showing the filmstrip reads as the dock growing
+    /// upward rather than a second panel popping in above the toolbar. One
+    /// `Color.black.opacity(0.85)` background/stroke/shadow for the whole
+    /// dock — this bar intentionally opts out of the translucent-material
+    /// language elsewhere per prior user feedback that translucency was
+    /// hard to read over photo content — and a single `RoundedRectangle`
+    /// shape (not `Capsule`) so toggling the filmstrip never interpolates
+    /// between two different shape types.
+    private func bottomDock(bottomInset: CGFloat) -> some View {
+        VStack(spacing: Glass.compactSpacing) {
+            if isFilmstripVisible && !photos.isEmpty {
+                Group {
+                    if isFilmstripMultiSelect {
+                        filmstripSelectionBar
+                    }
+                    FilmstripView(
+                        photos: photos,
+                        currentPhotoID: currentPhotoID,
+                        onSelect: { id in
+                            withAnimation(reduceMotion ? nil : Glass.spring) {
+                                currentPhotoID = id
+                            }
+                            scheduleRender()
+                        },
+                        isMultiSelectMode: $isFilmstripMultiSelect,
+                        selectedPhotoIDs: $selectedFilmstripPhotoIDs
+                    )
+                }
+                .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+            }
+            bottomToolbarButtons
+        }
+        .padding(.horizontal, Glass.spacing)
+        .padding(.vertical, Glass.compactSpacing + 2)
+        .background(Color.black.opacity(0.85), in: RoundedRectangle(cornerRadius: Glass.cornerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: Glass.cornerRadius, style: .continuous)
+                .strokeBorder(.white.opacity(Glass.strokeOpacity), lineWidth: 0.5)
+        )
+        .shadow(color: Glass.shadowColor, radius: Glass.shadowRadius, x: 0, y: Glass.shadowY)
+        .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.7), value: isExporting)
+        .padding(.bottom, bottomInset + Glass.compactSpacing)
+    }
+
+    /// Import/Export/before-after/Gallery/filmstrip-toggle buttons — just
+    /// the row itself, with no background of its own. Styling lives on the
+    /// shared `bottomDock` container so this row reads as part of one dock
+    /// whether or not the filmstrip is showing above it.
+    private var bottomToolbarButtons: some View {
         HStack(spacing: Glass.spacing) {
             PhotosPicker(selection: $selectedItem, matching: .images) {
                 Image(systemName: "photo.on.rectangle")
@@ -312,6 +443,18 @@ struct ContentView: View {
 
             Divider().frame(height: 20).overlay(.white.opacity(0.25))
 
+            Button {
+                toggleBeforeAfter()
+            } label: {
+                Image(systemName: isShowingOriginal ? "eye.fill" : "eye")
+                    .font(.body.weight(.semibold))
+                    .frame(width: 22, height: 22)
+            }
+            .disabled(currentPhoto == nil)
+            .accessibilityLabel(isShowingOriginal ? "Showing Original" : "Show Original")
+
+            Divider().frame(height: 20).overlay(.white.opacity(0.25))
+
             NavigationLink {
                 GalleryView(photos: photos, currentPhotoID: currentPhotoID) { id in
                     withAnimation(reduceMotion ? nil : Glass.spring) {
@@ -325,15 +468,27 @@ struct ContentView: View {
                     .frame(width: 22, height: 22)
             }
             .accessibilityLabel("Gallery")
+
+            Divider().frame(height: 20).overlay(.white.opacity(0.25))
+
+            Button {
+                withAnimation(reduceMotion ? nil : Glass.spring) {
+                    isFilmstripVisible.toggle()
+                    if !isFilmstripVisible {
+                        isFilmstripMultiSelect = false
+                        selectedFilmstripPhotoIDs = []
+                    }
+                }
+            } label: {
+                Image(systemName: "film")
+                    .font(.body.weight(.semibold))
+                    .frame(width: 22, height: 22)
+            }
+            .disabled(photos.isEmpty)
+            .accessibilityLabel(isFilmstripVisible ? "Hide Filmstrip" : "Show Filmstrip")
         }
         .buttonStyle(.glassPress)
         .foregroundStyle(.white)
-        .padding(.horizontal, Glass.spacing)
-        .padding(.vertical, Glass.compactSpacing + 2)
-        .background(Color.black.opacity(0.85), in: Capsule())
-        .overlay(Capsule().strokeBorder(.white.opacity(Glass.strokeOpacity), lineWidth: 0.5))
-        .shadow(color: Glass.shadowColor, radius: Glass.shadowRadius, x: 0, y: Glass.shadowY)
-        .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.7), value: isExporting)
     }
 
     /// The floating adjustment panel, docked to the bottom edge in portrait
@@ -386,10 +541,19 @@ struct ContentView: View {
             Capsule()
                 .fill(.white.opacity(0.35))
                 .frame(width: Glass.panelHandleSize.width, height: Glass.panelHandleSize.height)
-            HStack {
+            HStack(spacing: Glass.compactSpacing) {
                 Text("Adjust")
                     .font(.subheadline.weight(.semibold))
+                if let currentPhoto {
+                    Text(currentPhoto.isRAW ? "RAW" : "JPEG")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, Glass.compactSpacing)
+                        .padding(.vertical, 1)
+                        .background(.white.opacity(0.12), in: Capsule())
+                }
                 Spacer()
+                resetAllButton
                 Image(systemName: isPanelCollapsed ? "chevron.up" : "chevron.down")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
@@ -430,6 +594,29 @@ struct ContentView: View {
         )
     }
 
+    /// Resets every field in `AdjustmentSettings` back to `.neutral`. Lives
+    /// inside `panelHeader`, which already carries a `DragGesture
+    /// (minimumDistance: 0)` for the collapse/drag interaction above — a
+    /// plain `Button` there risks having its tap swallowed by that ancestor
+    /// gesture, so this uses `.highPriorityGesture` (which explicitly wins
+    /// over an ancestor's `.gesture`) instead of `Button`'s own tap
+    /// recognizer.
+    private var resetAllButton: some View {
+        Text("Reset")
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, Glass.compactSpacing)
+            .padding(.vertical, 2)
+            .contentShape(Rectangle())
+            .highPriorityGesture(
+                TapGesture().onEnded {
+                    currentSettings.wrappedValue = .neutral
+                }
+            )
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel("Reset All Adjustments")
+    }
+
     /// Keeps the free-floating panel from being dragged fully off-screen:
     /// the panel's approximate footprint (same sizing fractions it's framed
     /// with) must keep at least `Glass.panelMinVisibleMargin` points within
@@ -462,19 +649,38 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: Glass.spacing) {
             blackAndWhiteToggle
             if currentSettings.isBlackAndWhite.wrappedValue {
+                blackAndWhitePresetRow
                 adjustmentSlider("Red Mix", icon: "circle.fill", value: currentSettings.bwRedMix, range: AdjustmentSettings.channelMixRange)
+                adjustmentSlider("Orange Mix", icon: "circle.fill", value: currentSettings.bwOrangeMix, range: AdjustmentSettings.channelMixRange)
                 adjustmentSlider("Yellow Mix", icon: "circle.fill", value: currentSettings.bwYellowMix, range: AdjustmentSettings.channelMixRange)
                 adjustmentSlider("Green Mix", icon: "circle.fill", value: currentSettings.bwGreenMix, range: AdjustmentSettings.channelMixRange)
+                adjustmentSlider("Aqua Mix", icon: "circle.fill", value: currentSettings.bwAquaMix, range: AdjustmentSettings.channelMixRange)
                 adjustmentSlider("Blue Mix", icon: "circle.fill", value: currentSettings.bwBlueMix, range: AdjustmentSettings.channelMixRange)
+                adjustmentSlider("Purple Mix", icon: "circle.fill", value: currentSettings.bwPurpleMix, range: AdjustmentSettings.channelMixRange)
+                adjustmentSlider("Magenta Mix", icon: "circle.fill", value: currentSettings.bwMagentaMix, range: AdjustmentSettings.channelMixRange)
             }
-            adjustmentSlider("Temperature", icon: "thermometer.medium", value: currentSettings.temperature, range: AdjustmentSettings.temperatureRange)
-            adjustmentSlider("Tint", icon: "eyedropper.halffull", value: currentSettings.tint, range: AdjustmentSettings.tintRange)
+            adjustmentSlider(
+                "Temperature",
+                icon: "thermometer.medium",
+                value: currentSettings.temperature,
+                range: AdjustmentSettings.temperatureRange,
+                trackGradient: [.blue, .orange]
+            )
+            adjustmentSlider(
+                "Tint",
+                icon: "eyedropper.halffull",
+                value: currentSettings.tint,
+                range: AdjustmentSettings.tintRange,
+                trackGradient: [.green, Color(red: 1, green: 0, blue: 1)]
+            )
             adjustmentSlider("Exposure", icon: "sun.max", value: currentSettings.exposure, range: AdjustmentSettings.exposureRange)
             adjustmentSlider("Contrast", icon: "circle.lefthalf.filled", value: currentSettings.contrast, range: AdjustmentSettings.percentRange)
             adjustmentSlider("Highlights", icon: "sun.min", value: currentSettings.highlights, range: AdjustmentSettings.percentRange)
             adjustmentSlider("Shadows", icon: "moon", value: currentSettings.shadows, range: AdjustmentSettings.percentRange)
             adjustmentSlider("Blacks", icon: "circle.fill", value: currentSettings.blacks, range: AdjustmentSettings.percentRange)
             adjustmentSlider("Whites", icon: "circle", value: currentSettings.whites, range: AdjustmentSettings.percentRange)
+            presenceSection
+            filmSection
             if currentPhoto?.isRAW == true {
                 rawDetailSection
             }
@@ -483,21 +689,148 @@ struct ContentView: View {
         .padding(.vertical, Glass.spacing)
     }
 
+    /// Presence/detail controls (texture, clarity, dehaze, vibrance,
+    /// saturation), applied post-render for RAW and non-RAW photos alike
+    /// (see `AdjustmentPipeline.applyPresence`), so this section is shown
+    /// unconditionally rather than being RAW-gated like `rawDetailSection`.
+    private var presenceSection: some View {
+        VStack(alignment: .leading, spacing: Glass.spacing) {
+            HStack {
+                Text("Presence")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                sectionResetButton { resetPresence() }
+            }
+            adjustmentSlider("Texture", icon: "square.grid.3x3", value: currentSettings.texture, range: AdjustmentSettings.percentRange)
+            adjustmentSlider("Clarity", icon: "circle.dotted", value: currentSettings.clarity, range: AdjustmentSettings.percentRange)
+            adjustmentSlider("Dehaze", icon: "cloud.fog", value: currentSettings.dehaze, range: AdjustmentSettings.percentRange)
+            adjustmentSlider("Vibrance", icon: "sparkles", value: currentSettings.vibrance, range: AdjustmentSettings.percentRange)
+            adjustmentSlider("Saturation", icon: "drop", value: currentSettings.saturation, range: AdjustmentSettings.percentRange)
+        }
+    }
+
+    /// Film emulation: a profile picker (`FilmProfile.apply(to:)` stamps the
+    /// profile's suggested grain/fade/vignette defaults, and — for black and
+    /// white profiles — the channel-mix defaults too, per
+    /// `AdjustmentPipeline`) plus finishing sliders. `Film Strength` only
+    /// means something once a profile is selected, so it's gated the same
+    /// way the B&W mixer sliders are gated on `isBlackAndWhite`; grain/fade/
+    /// vignette are independent finishing controls and stay visible even at
+    /// "Clean Digital" (`.none`), matching how Lightroom treats Grain and
+    /// Vignette as their own panels rather than profile-only effects.
+    private var filmSection: some View {
+        VStack(alignment: .leading, spacing: Glass.spacing) {
+            HStack {
+                Text("Film")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                sectionResetButton { resetFilm() }
+            }
+            filmProfilePickerRow
+            if currentSettings.filmProfile.wrappedValue != .none {
+                adjustmentSlider("Film Strength", icon: "slider.horizontal.3", value: currentSettings.filmStrength, range: AdjustmentSettings.rawDetailRange)
+            }
+            adjustmentSlider("Grain", icon: "circle.grid.3x3.fill", value: currentSettings.grainAmount, range: AdjustmentSettings.rawDetailRange)
+            adjustmentSlider("Grain Size", icon: "square.grid.2x2", value: currentSettings.grainSize, range: AdjustmentSettings.grainSizeRange, defaultValue: 50)
+            adjustmentSlider("Fade", icon: "sun.haze", value: currentSettings.fadeAmount, range: AdjustmentSettings.rawDetailRange)
+            adjustmentSlider("Vignette", icon: "smallcircle.filled.circle", value: currentSettings.vignetteAmount, range: AdjustmentSettings.rawDetailRange)
+        }
+    }
+
+    /// One-tap film profile buttons (`FilmProfile.apply(to:)`), styled like
+    /// `blackAndWhitePresetRow` above. Scrollable horizontally since six
+    /// profiles don't all fit the panel's fixed width. The selected profile
+    /// is shown at full opacity; the rest are dimmed, same visual language
+    /// as a segmented control without a new component.
+    private var filmProfilePickerRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Glass.compactSpacing) {
+                ForEach(FilmProfile.allCases, id: \.self) { profile in
+                    Button(profile.displayName) {
+                        var settings = currentSettings.wrappedValue
+                        profile.apply(to: &settings)
+                        currentSettings.wrappedValue = settings
+                    }
+                    .buttonStyle(.glass)
+                    .font(.caption.weight(.medium))
+                    .opacity(currentSettings.filmProfile.wrappedValue == profile ? 1 : 0.6)
+                }
+            }
+        }
+        .foregroundStyle(.white)
+    }
+
     /// RAW-only detail controls (sharpness, noise reduction, detail, lens
     /// correction), applied natively via `CIRAWFilter` — see
     /// `ImageSource.applyRAWAdjustments`. Hidden entirely for non-RAW
     /// photos, matching the doc's "For RAW files only where supported".
     private var rawDetailSection: some View {
         VStack(alignment: .leading, spacing: Glass.spacing) {
-            Text("RAW Detail")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+            HStack {
+                Text("RAW Detail")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                sectionResetButton { resetRAWDetail() }
+            }
             lensCorrectionToggle
             adjustmentSlider("Sharpness", icon: "triangle", value: currentSettings.sharpness, range: AdjustmentSettings.rawDetailRange)
             adjustmentSlider("Luminance NR", icon: "aqi.low", value: currentSettings.luminanceNoiseReduction, range: AdjustmentSettings.rawDetailRange)
             adjustmentSlider("Color NR", icon: "paintpalette", value: currentSettings.colorNoiseReduction, range: AdjustmentSettings.rawDetailRange)
             adjustmentSlider("Detail", icon: "wand.and.stars", value: currentSettings.detailAmount, range: AdjustmentSettings.rawDetailRange)
         }
+    }
+
+    /// Small "Reset" button trailing a section header (Presence, Film, RAW
+    /// Detail). Unlike `resetAllButton` in `panelHeader`, these sections live
+    /// in `slidersList`'s `ScrollView`, not the panel header's drag-gesture
+    /// surface, so a plain `Button` needs no gesture workaround.
+    private func sectionResetButton(action: @escaping () -> Void) -> some View {
+        Button("Reset", action: action)
+            .font(.caption.weight(.medium))
+            .foregroundStyle(.secondary)
+    }
+
+    /// Resets Presence's fields (texture/clarity/dehaze/vibrance/saturation)
+    /// to `.neutral`, leaving every other section untouched.
+    private func resetPresence() {
+        var settings = currentSettings.wrappedValue
+        let neutral = AdjustmentSettings.neutral
+        settings.texture = neutral.texture
+        settings.clarity = neutral.clarity
+        settings.dehaze = neutral.dehaze
+        settings.vibrance = neutral.vibrance
+        settings.saturation = neutral.saturation
+        currentSettings.wrappedValue = settings
+    }
+
+    /// Resets Film's fields (profile, strength, grain, fade, vignette) to
+    /// `.neutral`, leaving every other section untouched.
+    private func resetFilm() {
+        var settings = currentSettings.wrappedValue
+        let neutral = AdjustmentSettings.neutral
+        settings.filmProfile = neutral.filmProfile
+        settings.filmStrength = neutral.filmStrength
+        settings.grainAmount = neutral.grainAmount
+        settings.grainSize = neutral.grainSize
+        settings.fadeAmount = neutral.fadeAmount
+        settings.vignetteAmount = neutral.vignetteAmount
+        currentSettings.wrappedValue = settings
+    }
+
+    /// Resets RAW Detail's fields (sharpness, noise reduction, detail, lens
+    /// correction) to `.neutral`, leaving every other section untouched.
+    private func resetRAWDetail() {
+        var settings = currentSettings.wrappedValue
+        let neutral = AdjustmentSettings.neutral
+        settings.sharpness = neutral.sharpness
+        settings.luminanceNoiseReduction = neutral.luminanceNoiseReduction
+        settings.colorNoiseReduction = neutral.colorNoiseReduction
+        settings.detailAmount = neutral.detailAmount
+        settings.lensCorrectionEnabled = neutral.lensCorrectionEnabled
+        currentSettings.wrappedValue = settings
     }
 
     private var lensCorrectionToggle: some View {
@@ -512,6 +845,25 @@ struct ContentView: View {
             }
         }
         .tint(.white)
+        .foregroundStyle(.white)
+    }
+
+    /// One-tap starting points for the 8-channel mixer above
+    /// (`AdjustmentPipeline.BlackAndWhitePreset`): each button stamps all 8
+    /// mix values into the current settings. Only shown while black and
+    /// white mode is on, right above the mixer sliders it feeds.
+    private var blackAndWhitePresetRow: some View {
+        HStack(spacing: Glass.compactSpacing) {
+            ForEach(AdjustmentPipeline.BlackAndWhitePreset.allCases) { preset in
+                Button(preset.rawValue) {
+                    var settings = currentSettings.wrappedValue
+                    preset.apply(to: &settings)
+                    currentSettings.wrappedValue = settings
+                }
+                .buttonStyle(.glass)
+                .font(.caption.weight(.medium))
+            }
+        }
         .foregroundStyle(.white)
     }
 
@@ -534,7 +886,9 @@ struct ContentView: View {
         _ title: String,
         icon: String,
         value: Binding<Double>,
-        range: ClosedRange<Double>
+        range: ClosedRange<Double>,
+        defaultValue: Double = 0,
+        trackGradient: [Color]? = nil
     ) -> some View {
         VStack(alignment: .leading, spacing: Glass.compactSpacing / 2) {
             HStack(spacing: Glass.compactSpacing) {
@@ -555,8 +909,26 @@ struct ContentView: View {
                     .padding(.vertical, 2)
                     .background(.white.opacity(0.12), in: Capsule())
             }
-            Slider(value: value, in: range)
-                .tint(.white)
+            ZStack {
+                // White-balance-only visual aid (Temperature/Tint): a
+                // gradient capsule layered behind the real `Slider` so the
+                // user can see at a glance which direction they're moving
+                // toward (cool/warm, green/magenta). Purely decorative —
+                // the stock `Slider` on top still does all the actual drag,
+                // hit-testing, and accessibility work, so it's hidden from
+                // VoiceOver rather than duplicating the slider's own value.
+                if let trackGradient {
+                    Capsule()
+                        .fill(LinearGradient(colors: trackGradient, startPoint: .leading, endPoint: .trailing))
+                        .frame(height: Glass.sliderGradientTrackHeight)
+                        .accessibilityHidden(true)
+                }
+                Slider(value: value, in: range)
+                    .tint(.white)
+                    .onTapGesture(count: 2) {
+                        value.wrappedValue = defaultValue
+                    }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .foregroundStyle(.white)
@@ -631,6 +1003,54 @@ struct ContentView: View {
                 histogramBins = bins
                 if let index = photos.firstIndex(where: { $0.id == photo.id }) {
                     photos[index].thumbnail = image
+                }
+            }
+        }
+    }
+
+    /// Flips the before/after toggle: showing the original re-renders once
+    /// with `.neutral` settings (see `showOriginalPreview`); returning to the
+    /// edit just re-runs the normal `scheduleRender()` path so the real
+    /// settings, thumbnail, and histogram all come back in sync.
+    private func toggleBeforeAfter() {
+        isShowingOriginal.toggle()
+        if isShowingOriginal {
+            showOriginalPreview()
+        } else {
+            scheduleRender()
+        }
+    }
+
+    /// A one-shot render of the current photo with `.neutral` settings, for
+    /// the before/after toggle. Deliberately separate from `scheduleRender`
+    /// (no debounce — this fires once on a discrete tap, not a slider drag)
+    /// and deliberately narrower: it only ever sets `renderedPreview`, never
+    /// `photo.settings`, `histogramBins`, or `photos[index].thumbnail` — this
+    /// is a temporary preview swap, not an edit, so nothing here should be
+    /// mistaken for (or persisted as) the user's real settings. Renders
+    /// through `photo.imageSource` directly with `cache: nil` rather than
+    /// `photo.previewSourceImage`, since the latter is keyed to the photo's
+    /// actual settings and reusing it here would either return the wrong
+    /// image or overwrite that cache with a neutral decode.
+    private func showOriginalPreview() {
+        renderTask?.cancel()
+        guard let photo = currentPhoto else { return }
+        let context = context
+        let animateCrossfade = !reduceMotion
+        renderTask = Task.detached(priority: .userInitiated) {
+            let previewSourceImage = photo.imageSource.previewImage(adjustments: .neutral, cache: nil)
+            guard !Task.isCancelled else { return }
+            let processed = AdjustmentPipeline.apply(.neutral, to: previewSourceImage, isRAW: photo.isRAW)
+            guard !Task.isCancelled,
+                  let cgImage = context.createCGImage(processed, from: processed.extent) else { return }
+            let image = UIImage(cgImage: cgImage)
+            await MainActor.run {
+                if animateCrossfade {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        renderedPreview = image
+                    }
+                } else {
+                    renderedPreview = image
                 }
             }
         }
