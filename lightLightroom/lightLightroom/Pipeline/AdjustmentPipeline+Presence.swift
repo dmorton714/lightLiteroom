@@ -14,15 +14,24 @@ extension AdjustmentPipeline {
         return output
     }
 
-    /// Small radius: fine detail without broad tonal shifts.
+    /// Small radius: fine detail without broad tonal shifts. `CIUnsharpMask`
+    /// clamps negative `intensity` to a no-op, so negative values here blend
+    /// toward a blur instead of sharpening.
     static func applyTexture(_ value: Double, to image: CIImage) -> CIImage {
         guard value != 0 else { return image }
+        guard value > 0 else {
+            return softenLocalContrast(image, radius: 4, amount: -value / 100 * 0.6)
+        }
         return unsharpMask(image, radius: 4, intensity: value / 100 * 0.6)
     }
 
     /// Wide radius reads as mid-tone local contrast rather than sharpening.
+    /// Negative values soften the same way `applyTexture` does.
     static func applyClarity(_ value: Double, to image: CIImage) -> CIImage {
         guard value != 0 else { return image }
+        guard value > 0 else {
+            return softenLocalContrast(image, radius: 50, amount: -value / 100 * 0.5)
+        }
         return unsharpMask(image, radius: 50, intensity: value / 100 * 0.5)
     }
 
@@ -61,5 +70,24 @@ extension AdjustmentPipeline {
         filter.radius = radius
         filter.intensity = Float(intensity)
         return filter.outputImage ?? image
+    }
+
+    /// Inverse of `unsharpMask`: blends toward a blurred version of the
+    /// image by `amount` (0...1), for the negative direction of Texture/Clarity.
+    static func softenLocalContrast(_ image: CIImage, radius: Float, amount: Double) -> CIImage {
+        let blur = CIFilter.gaussianBlur()
+        blur.inputImage = image
+        blur.radius = radius
+        guard let blurred = blur.outputImage?.cropped(to: image.extent) else { return image }
+
+        let alphaMatrix = CIFilter.colorMatrix()
+        alphaMatrix.inputImage = blurred
+        alphaMatrix.aVector = CIVector(x: 0, y: 0, z: 0, w: CGFloat(amount))
+        guard let fadedBlur = alphaMatrix.outputImage else { return image }
+
+        let blend = CIFilter.sourceOverCompositing()
+        blend.inputImage = fadedBlur
+        blend.backgroundImage = image
+        return (blend.outputImage ?? image).cropped(to: image.extent)
     }
 }

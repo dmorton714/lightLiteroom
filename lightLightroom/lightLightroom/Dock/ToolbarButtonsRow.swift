@@ -17,6 +17,7 @@ struct ToolbarButtonsRow: View {
     let onExport: () -> Void
     let onToggleBeforeAfter: () -> Void
     let onSelectPhoto: (EditedPhoto.ID) -> Void
+    let onEnterCrop: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -56,6 +57,14 @@ struct ToolbarButtonsRow: View {
             }
             .disabled(currentPhoto == nil)
             .accessibilityLabel(isShowingOriginal ? "Showing Original" : "Show Original")
+
+            if showsDividers { DockDivider() }
+
+            Button(action: onEnterCrop) {
+                DockIcon("crop")
+            }
+            .disabled(currentPhoto == nil)
+            .accessibilityLabel("Crop")
 
             if showsDividers { DockDivider() }
 

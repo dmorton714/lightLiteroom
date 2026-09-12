@@ -16,11 +16,14 @@ struct AdjustmentsPanelView: View {
     let histogramBins: [Float]
     @Binding var isPanelCollapsed: Bool
     let isLandscape: Bool
+    /// The space this panel actually has to lay out in — already excludes
+    /// the dock, since the dock reserves its own space via
+    /// `.safeAreaInset(edge: .bottom)` higher up the tree (see
+    /// `ContentView+Layout`) and this view is measured inside that
+    /// shrunk frame. Nothing here needs to additionally subtract the
+    /// dock's height — `.safeAreaInset` already did that once, and
+    /// subtracting it again would just double-count it.
     let availableSize: CGSize
-    /// Actual measured height of the bottom dock, reported up via
-    /// `DockHeightPreferenceKey`, so this panel reserves exactly as much
-    /// room as the dock currently occupies instead of a fixed guess.
-    let dockReservedHeight: CGFloat
 
     @State private var panelOffset: CGSize = .zero
     @GestureState private var panelDragTranslation: CGSize = .zero
@@ -33,8 +36,7 @@ struct AdjustmentsPanelView: View {
             isLandscape: isLandscape,
             isCompact: horizontalSizeClass == .compact,
             isPanelCollapsed: isPanelCollapsed,
-            availableSize: availableSize,
-            dockReservedHeight: dockReservedHeight
+            availableSize: availableSize
         )
     }
 
@@ -53,21 +55,16 @@ struct AdjustmentsPanelView: View {
                     slidersList
                 }
                 .scrollBounceBehavior(.basedOnSize)
-            } else {
-                Spacer(minLength: Glass.compactSpacing)
             }
         }
         .frame(width: layout.width)
-        .frame(maxHeight: layout.maxHeight)
+        .frame(maxHeight: isPanelCollapsed ? nil : layout.maxHeight)
         .glassDockedPanel(corners: corners)
         .padding(.horizontal, isLandscape ? 0 : layout.edgePadding)
         .padding(.trailing, isLandscape ? layout.edgePadding : 0)
-        .padding(.bottom, dockReservedHeight + layout.edgePadding)
+        .padding(.bottom, layout.edgePadding)
         .offset(layout.clampedOffset(panelOffset + panelDragTranslation))
         .onChange(of: availableSize) { _, _ in
-            panelOffset = layout.clampedOffset(panelOffset)
-        }
-        .onChange(of: dockReservedHeight) { _, _ in
             panelOffset = layout.clampedOffset(panelOffset)
         }
         .onChange(of: isPanelCollapsed) { _, _ in
@@ -92,6 +89,13 @@ struct AdjustmentsPanelView: View {
         PanelHeader(isRAW: isRAW, isPanelCollapsed: isPanelCollapsed) {
             settings = .neutral
         }
+        // Drag-to-move/tap-to-collapse lives on a background layer, not
+        // wrapped directly around the header's content: a `.simultaneousGesture`
+        // here always fires regardless of what's in front of it, which was
+        // swallowing taps on `ResetAllButton` (a real `Button` in front now
+        // wins its own touches naturally; this background still gets
+        // everything else — capsule, title, chevron, empty space).
+        .background(headerDragArea)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(isPanelCollapsed ? "Expand adjustments panel" : "Collapse adjustments panel")
         .accessibilityHint("Double tap to toggle. Drag to move the panel.")
@@ -101,25 +105,30 @@ struct AdjustmentsPanelView: View {
                 isPanelCollapsed.toggle()
             }
         }
-        .gesture(
-            DragGesture(minimumDistance: 0)
-                .updating($panelDragTranslation) { value, state, _ in
-                    state = value.translation
-                }
-                .onEnded { value in
-                    let distance = hypot(value.translation.width, value.translation.height)
-                    if distance < Glass.dragTapThreshold {
-                        withAnimation(reduceMotion ? nil : Glass.spring) {
-                            isPanelCollapsed.toggle()
-                        }
-                    } else {
-                        let proposed = panelOffset + value.translation
-                        withAnimation(reduceMotion ? nil : Glass.spring) {
-                            panelOffset = layout.clampedOffset(proposed)
+    }
+
+    private var headerDragArea: some View {
+        Color.clear
+            .contentShape(Rectangle())
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .updating($panelDragTranslation) { value, state, _ in
+                        state = value.translation
+                    }
+                    .onEnded { value in
+                        let distance = hypot(value.translation.width, value.translation.height)
+                        if distance < Glass.dragTapThreshold {
+                            withAnimation(reduceMotion ? nil : Glass.spring) {
+                                isPanelCollapsed.toggle()
+                            }
+                        } else {
+                            let proposed = panelOffset + value.translation
+                            withAnimation(reduceMotion ? nil : Glass.spring) {
+                                panelOffset = layout.clampedOffset(proposed)
+                            }
                         }
                     }
-                }
-        )
+            )
     }
 
     private var slidersList: some View {

@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+# Builds and launches lightLightroom on iPhone Simulator, iPad Simulator,
+# and Mac Catalyst — all three, every time, so a demo never starts from a
+# stale build. Usage: ./run
+set -uo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$ROOT/lightLightroom"
+SCHEME="lightLightroom"
+BUNDLE_ID="com.dannymorton.lightLightroom"
+DERIVED="$PROJECT_DIR/build"
+
+cd "$PROJECT_DIR"
+
+step() { printf '\n\033[1;34m==> %s\033[0m\n' "$1"; }
+fail() { printf '\033[1;31m✗ %s\033[0m\n' "$1"; exit 1; }
+
+# --- Keep the Xcode project's file list in sync with what's on disk. ---
+# Every new/moved/deleted .swift file needs a project.pbxproj entry or the
+# build fails with "cannot find X in scope" — this project doesn't use
+# Xcode's synchronized-folder feature, so this step isn't optional.
+step "Syncing project.pbxproj with files on disk"
+python3 scripts/sync_project.py || fail "sync_project.py failed"
+
+# --- Pick whatever iPhone/iPad simulators are actually installed. ---
+# Hardcoding a specific simulator name (e.g. "iPhone 15") breaks the moment
+# that simulator isn't installed on whatever machine runs this script.
+iphone_udid=$(xcrun simctl list devices available | grep -m1 -E "iPhone" | grep -oE '[0-9A-F-]{36}')
+ipad_udid=$(xcrun simctl list devices available | grep -m1 -E "iPad" | grep -oE '[0-9A-F-]{36}')
+
+[ -n "$iphone_udid" ] || fail "No iPhone simulator found. Install one via Xcode > Settings > Platforms."
+[ -n "$ipad_udid" ] || fail "No iPad simulator found. Install one via Xcode > Settings > Platforms."
+
+open -a Simulator
+
+# Sample RAW/JPEG test photos (the same set edit-imporvement.md tunes
+# against) — seeded into each simulator's Photos library so there's
+# something to import the moment the app opens.
+IMAGES_DIR="$ROOT/images"
+
+build_and_run_sim() {
+  local label="$1" udid="$2" out="$3"
+  step "Building for $label"
+  xcodebuild -scheme "$SCHEME" -destination "id=$udid" -derivedDataPath "$out" build \
+    | grep -E "error:|BUILD SUCCEEDED|BUILD FAILED" || true
+  local app="$out/Build/Products/Debug-iphonesimulator/lightLightroom.app"
+  [ -d "$app" ] || fail "$label build did not produce an app bundle"
+
+  step "Booting $label simulator"
+  xcrun simctl boot "$udid" 2>/dev/null || true
+  xcrun simctl bootstatus "$udid" -b >/dev/null 2>&1
+
+  if [ -d "$IMAGES_DIR" ]; then
+    step "Seeding sample photos onto $label"
+    xcrun simctl addmedia "$udid" "$IMAGES_DIR"/* 2>/dev/null || echo "  (skipped — already present or failed, non-fatal)"
+  fi
+
+  step "Installing + launching on $label"
+  xcrun simctl install "$udid" "$app" || fail "$label install failed"
+  xcrun simctl terminate "$udid" "$BUNDLE_ID" >/dev/null 2>&1 || true
+  xcrun simctl launch "$udid" "$BUNDLE_ID" || fail "$label launch failed"
+}
+
+build_and_run_sim "iPhone" "$iphone_udid" "$DERIVED/iphone"
+build_and_run_sim "iPad" "$ipad_udid" "$DERIVED/ipad"
+
+# --- Mac Catalyst: no simulator, runs as a native window; unsigned/ad-hoc
+# so it launches without a development team configured. ---
+step "Building for Mac (Catalyst)"
+xcodebuild -scheme "$SCHEME" -destination 'platform=macOS,variant=Mac Catalyst' \
+  -derivedDataPath "$DERIVED/mac" \
+  CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM="" \
+  build | grep -E "error:|BUILD SUCCEEDED|BUILD FAILED" || true
+
+MAC_APP="$DERIVED/mac/Build/Products/Debug-maccatalyst/lightLightroom.app"
+[ -d "$MAC_APP" ] || fail "Mac Catalyst build did not produce an app bundle"
+
+# Mac Catalyst reads from the real, local Photos library (not simulator
+# media) — import the same sample photos there so there's something to
+# pick from the moment the app opens. Best-effort: Photos.app permission
+# prompts or an already-imported duplicate shouldn't fail the whole script.
+if [ -d "$IMAGES_DIR" ]; then
+  step "Seeding sample photos into the Mac's Photos library"
+  osascript -e "tell application \"Photos\" to import (POSIX file \"$IMAGES_DIR/P4260041.ORF\") skip check duplicates true" >/dev/null 2>&1 || true
+  osascript -e "tell application \"Photos\" to import (POSIX file \"$IMAGES_DIR/P9050131.ORF\") skip check duplicates true" >/dev/null 2>&1 || true
+  osascript -e "tell application \"Photos\" to import (POSIX file \"$IMAGES_DIR/4M4A1115.CR3\") skip check duplicates true" >/dev/null 2>&1 || true
+  osascript -e "tell application \"Photos\" to import (POSIX file \"$IMAGES_DIR/Wilemon_Katherine_689--0002.jpg\") skip check duplicates true" >/dev/null 2>&1 || true
+fi
+
+step "Launching on Mac"
+if killall lightLightroom >/dev/null 2>&1; then
+  sleep 1  # let Launch Services finish tearing down the old instance
+fi
+open -n "$MAC_APP" || fail "Mac launch failed"
+
+step "All three targets built and launched"

@@ -9,12 +9,13 @@ struct FilmstripToggleButton: View {
     @Binding var selectedFilmstripPhotoIDs: Set<EditedPhoto.ID>
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     var body: some View {
         Button {
             withAnimation(reduceMotion ? nil : Glass.spring) {
                 isFilmstripVisible.toggle()
-                if isFilmstripVisible {
+                if isFilmstripVisible && horizontalSizeClass == .compact {
                     isPanelCollapsed = true
                 } else {
                     isFilmstripMultiSelect = false

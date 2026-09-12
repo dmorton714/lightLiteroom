@@ -33,9 +33,6 @@ enum Glass {
     static let panelMinVisibleMargin: CGFloat = 56
     /// Header touches moving less than this count as a tap, not a drag.
     static let dragTapThreshold: CGFloat = 8
-    /// Space reserved under the panel until `DockHeightPreferenceKey` reports
-    /// the dock's real height.
-    static let bottomToolbarReservedHeight: CGFloat = 64
 
     /// Height of the gradient capsule behind the Temperature/Tint sliders.
     static let sliderGradientTrackHeight: CGFloat = 6

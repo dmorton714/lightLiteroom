@@ -7,8 +7,9 @@ import UIKit
 /// designed to avoid: an `actor` so multiple trigger points (launch, import,
 /// batch-apply) can't double-enqueue the same photo, processing one photo at
 /// a time at background priority, using `EditedPhoto.thumbnailSourceImage`
-/// (a small, uncached render — never `RAWPreviewCache`, which is reserved
-/// for the interactive editor's single current photo).
+/// (a small, uncached source — never `RAWPreviewCache`, which is reserved
+/// for the interactive editor's single current photo) and then applying the
+/// normal adjustment pipeline so thumbnails match preview/export.
 actor ThumbnailCatchupQueue {
     private var processedIDs: Set<EditedPhoto.ID> = []
     private let context = CIContext()
@@ -29,7 +30,7 @@ actor ThumbnailCatchupQueue {
         for photo in targets {
             guard !Task.isCancelled else { return }
             processedIDs.insert(photo.id)
-            let ciImage = photo.thumbnailSourceImage
+            let ciImage = AdjustmentPipeline.apply(photo.settings, to: photo.thumbnailSourceImage, isRAW: photo.isRAW)
             guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { continue }
             let image = UIImage(cgImage: cgImage)
             let id = photo.id

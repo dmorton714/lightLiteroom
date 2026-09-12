@@ -45,6 +45,12 @@ struct AdjustmentSettings: Equatable, Codable {
     var fadeAmount: Double = 0
     var vignetteAmount: Double = 0
 
+    /// Straight rectangular crop, applied last in `AdjustmentPipeline`. See
+    /// `CropSettings` for why this is one nested field instead of raw rect
+    /// components: its parts (rect + aspect) are only ever read/written
+    /// together, unlike the flat sliders above.
+    var crop: CropSettings = .identity
+
     static let neutral = AdjustmentSettings()
 
     static let temperatureRange: ClosedRange<Double> = -100...100

@@ -14,7 +14,7 @@ extension ContentView {
             histogramBins = []
             return
         }
-        renderTask = renderOffMain(debounce: true) {
+        renderTask = renderOffMain(debounce: true, animatePreviewSwap: false) {
             PreviewRenderer.render(photo.previewSourceImage, settings: photo.settings, isRAW: photo.isRAW, context: context, includeHistogram: true)
         } then: { output in
             histogramBins = output.histogramBins
@@ -30,7 +30,7 @@ extension ContentView {
     func showOriginalPreview() {
         renderTask?.cancel()
         guard let photo = currentPhoto else { return }
-        renderTask = renderOffMain(debounce: false) {
+        renderTask = renderOffMain(debounce: false, animatePreviewSwap: true) {
             let source = photo.imageSource.previewImage(adjustments: .neutral, cache: nil)
             return PreviewRenderer.render(source, settings: .neutral, isRAW: photo.isRAW, context: context, includeHistogram: false)
         } then: { _ in }
@@ -38,10 +38,11 @@ extension ContentView {
 
     private func renderOffMain(
         debounce: Bool,
+        animatePreviewSwap: Bool,
         _ render: @escaping () -> PreviewRenderer.Output?,
         then apply: @escaping @MainActor (PreviewRenderer.Output) -> Void
     ) -> Task<Void, Never> {
-        let animate = !reduceMotion
+        let animate = animatePreviewSwap && !reduceMotion
         return Task.detached(priority: .userInitiated) {
             if debounce { try? await Task.sleep(for: Self.renderDebounce) }
             guard !Task.isCancelled, let output = render() else { return }

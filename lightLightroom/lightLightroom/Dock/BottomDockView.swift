@@ -6,6 +6,14 @@ import PhotosUI
 /// glass surface, so showing the filmstrip reads as the dock growing
 /// upward rather than a second panel popping in above the toolbar.
 ///
+/// Attached to the editor via `.safeAreaInset(edge: .bottom)` (see
+/// `ContentView+Layout`), not a manually-positioned overlay: that's the
+/// framework-native pattern for "content reserves its own space at a
+/// screen edge" (the same mechanism a custom tab bar uses), so this view
+/// never needs to know the window's real safe-area insets, and everything
+/// else on screen automatically gets its safe area enlarged by however
+/// tall this dock currently is — no manual height measurement/plumbing.
+///
 /// Reads/writes `currentPhotoID`, `isFilmstripVisible`,
 /// `isFilmstripMultiSelect`, and `selectedFilmstripPhotoIDs` directly since
 /// it owns their UI; `photos` is read-only here (`ContentView` owns the
@@ -22,8 +30,6 @@ struct BottomDockView: View {
     @Binding var isPanelCollapsed: Bool
     @Binding var isFilmstripMultiSelect: Bool
     @Binding var selectedFilmstripPhotoIDs: Set<EditedPhoto.ID>
-    let bottomInset: CGFloat
-    let availableWidth: CGFloat
     let onExport: () -> Void
     let onToggleBeforeAfter: () -> Void
     /// Called whenever a photo is selected from the gallery or filmstrip,
@@ -31,16 +37,13 @@ struct BottomDockView: View {
     /// can schedule a render — this view has no opinion on rendering.
     let onSelectPhoto: (EditedPhoto.ID) -> Void
     let onApplyToSelected: () -> Void
+    let onEnterCrop: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var horizontalMargin: CGFloat {
-        min(Glass.spacing, max(Glass.compactSpacing, availableWidth * 0.035))
-    }
-
-    private var maxDockWidth: CGFloat {
-        max(0, availableWidth - horizontalMargin * 2 - Glass.compactSpacing * 2)
-    }
+    /// Widest the dock is allowed to get on a large window — beyond this it
+    /// just stays centered rather than stretching edge to edge.
+    private static let maxWidth: CGFloat = 640
 
     var body: some View {
         VStack(spacing: Glass.compactSpacing) {
@@ -57,7 +60,8 @@ struct BottomDockView: View {
                 selectedFilmstripPhotoIDs: $selectedFilmstripPhotoIDs,
                 onExport: onExport,
                 onToggleBeforeAfter: onToggleBeforeAfter,
-                onSelectPhoto: onSelectPhoto
+                onSelectPhoto: onSelectPhoto,
+                onEnterCrop: onEnterCrop
             )
             if isFilmstripVisible && !photos.isEmpty {
                 Group {
@@ -87,17 +91,12 @@ struct BottomDockView: View {
             }
         }
         .fixedSize(horizontal: false, vertical: true)
-        .frame(maxWidth: maxDockWidth)
+        .frame(maxWidth: Self.maxWidth)
         .padding(.horizontal, Glass.compactSpacing)
         .padding(.vertical, Glass.compactSpacing + 2)
         .darkDock()
         .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.7), value: isExporting)
-        .padding(.bottom, bottomInset + Glass.compactSpacing)
-        .padding(.horizontal, horizontalMargin)
-        .background(
-            GeometryReader { proxy in
-                Color.clear.preference(key: DockHeightPreferenceKey.self, value: proxy.size.height)
-            }
-        )
+        .padding(.bottom, Glass.compactSpacing)
+        .frame(maxWidth: .infinity)
     }
 }

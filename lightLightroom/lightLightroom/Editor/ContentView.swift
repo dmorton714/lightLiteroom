@@ -16,12 +16,13 @@ struct ContentView: View {
     @State var isExporting = false
     @State var exportAlertMessage: String?
     @State var isPanelCollapsed = false
-    @State var dockHeight: CGFloat = Glass.bottomToolbarReservedHeight
     @State var isShowingOriginal = false
     @State var isFilmstripVisible = false
     @State var isFilmstripMultiSelect = false
     @State var selectedFilmstripPhotoIDs: Set<EditedPhoto.ID> = []
     @State var batchApplyMessage: String?
+    @State var isZoomedIntoPhoto = false
+    @State var cropState = CropModeState()
 
     @Environment(\.accessibilityReduceMotion) var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
@@ -33,9 +34,9 @@ struct ContentView: View {
             GeometryReader { geometry in
                 editorLayout(in: geometry)
             }
+            .safeAreaInset(edge: .bottom, spacing: 0) { dock }
             .toolbar(.hidden, for: .navigationBar)
         }
-        .onPreferenceChange(DockHeightPreferenceKey.self) { dockHeight = $0 }
         .preferredColorScheme(.dark)
         .animation(reduceMotion ? nil : Glass.spring, value: currentPhoto != nil)
         .task { loadPersistedPhotos() }
@@ -48,6 +49,10 @@ struct ContentView: View {
         }
         .onChange(of: currentPhotoID) { _, _ in
             isShowingOriginal = false
+            // A stale draft rect from the previous photo must never bleed
+            // onto the new one; gallery/filmstrip navigation stays reachable
+            // while cropping, unlike the swipe gesture.
+            cropState.isActive = false
         }
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .background || newPhase == .inactive else { return }

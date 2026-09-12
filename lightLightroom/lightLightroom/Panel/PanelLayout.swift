@@ -3,12 +3,17 @@ import SwiftUI
 /// Pure sizing/clamping math for the free-floating adjustments panel — kept
 /// separate from `AdjustmentsPanelView`'s view body so the two can't drift
 /// out of sync and so this math is testable on its own.
+///
+/// `availableSize` is the space this panel's ancestor was actually given by
+/// SwiftUI — which already excludes the bottom dock, since the dock reserves
+/// its own space via `.safeAreaInset(edge: .bottom)` higher up the tree (see
+/// `ContentView+Layout`). None of the math below needs to subtract the
+/// dock's height a second time.
 struct PanelLayout {
     let isLandscape: Bool
     let isCompact: Bool
     let isPanelCollapsed: Bool
     let availableSize: CGSize
-    let dockReservedHeight: CGFloat
 
     var edgePadding: CGFloat {
         isCompact ? Glass.compactSpacing : Glass.screenEdgePadding
@@ -25,12 +30,11 @@ struct PanelLayout {
     /// `availableSize`. Applies a horizontal-size-class-selected percentage
     /// first, then an absolute safety clamp: even if that fraction turns
     /// out to be too generous for some screen it wasn't tuned for, the
-    /// panel plus `dockReservedHeight` can never consume so much of
-    /// `availableSize.height` that fewer than `Glass.panelMinVisibleMargin`
-    /// points remain for the photo behind it.
+    /// panel can never consume so much of `availableSize.height` that
+    /// fewer than `Glass.panelMinVisibleMargin` points remain for the
+    /// photo behind it.
     var maxHeight: CGFloat {
-        let verticalChrome = dockReservedHeight + edgePadding * 2
-        let usableHeight = max(0, availableSize.height - verticalChrome)
+        let usableHeight = max(0, availableSize.height - edgePadding * 2)
         let fraction: CGFloat
         if isLandscape {
             fraction = isCompact ? Glass.panelMaxHeightFractionLandscapeCompact : Glass.panelMaxHeightFractionLandscape
@@ -55,7 +59,7 @@ struct PanelLayout {
         guard !isCompact else { return .zero }
         let panelWidth = width
         let panelHeight = isPanelCollapsed ? Glass.collapsedPanelHeight : maxHeight
-        let totalHeight = panelHeight + dockReservedHeight + edgePadding
+        let totalHeight = panelHeight + edgePadding
 
         let defaultX = isLandscape ? availableSize.width - panelWidth - edgePadding : (availableSize.width - panelWidth) / 2
         let defaultY = isLandscape ? max(edgePadding, (availableSize.height - totalHeight) / 2) : availableSize.height - totalHeight

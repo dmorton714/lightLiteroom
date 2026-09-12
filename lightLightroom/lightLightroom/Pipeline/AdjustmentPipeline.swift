@@ -16,7 +16,8 @@ enum AdjustmentPipeline {
             output = applyBlackAndWhiteMix(settings.blackAndWhiteMix, to: output)
         }
         output = applyContrast(settings.contrast, to: output)
-        output = applyHighlightsAndShadows(highlights: settings.highlights, shadows: settings.shadows, to: output)
+        output = applyHighlights(settings.highlights, to: output)
+        output = applyShadows(settings.shadows, to: output)
         output = applyBlacksAndWhites(blacks: settings.blacks, whites: settings.whites, to: output)
         output = applyPresence(settings, to: output)
         // Film look goes after core tonal correction, before grain/vignette.
@@ -24,10 +25,10 @@ enum AdjustmentPipeline {
         output = applyFade(settings.fadeAmount, to: output)
         output = applyGrain(amount: settings.grainAmount, size: settings.grainSize, to: output)
         output = applyVignette(settings.vignetteAmount, to: output)
+        // Crop runs dead last: it changes the image's extent, and every
+        // stage above (vignette centering, grain's resolution
+        // normalization) assumes the full pre-crop frame.
+        output = applyCrop(settings.crop, to: output)
         return output
-    }
-
-    static func clamped(_ value: Double) -> Double {
-        min(max(value, 0), 1)
     }
 }
