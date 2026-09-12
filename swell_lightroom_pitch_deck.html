@@ -8,7 +8,7 @@
     @page {
         size: A4 landscape;
         margin: 0;
-        background-color: #fbf9f5;
+        background-color: #FFF8F0;
     }
     * {
         box-sizing: border-box;
@@ -17,15 +17,15 @@
         margin: 0;
         padding: 0;
         font-family: 'Google Sans', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        color: #202124;
-        background-color: #fbf9f5;
+        color: #3E3C3B;
+        background-color: #FFF8F0;
         -webkit-font-smoothing: antialiased;
         overflow: hidden;
     }
     .slide {
         width: 100vw;
         height: 100vh;
-        padding: clamp(28px, 6vh, 72px) clamp(30px, 7vw, 96px);
+        padding: clamp(40px, 8vh, 80px) clamp(50px, 10vw, 120px);
         position: relative;
         display: none;
         overflow: hidden;
@@ -35,42 +35,42 @@
     }
     /* Slide 1: Title Slide */
     .slide-1 {
-        background: linear-gradient(135deg, #fdf8f2 0%, #f4eae0 100%);
+        background: linear-gradient(135deg, #FDF8F0 0%, #F4ECE6 100%);
     }
     .slide-1 .content {
-        margin-top: clamp(60px, 18vh, 180px);
+        margin-top: clamp(80px, 20vh, 200px);
     }
     .badge {
         display: inline-block;
-        background-color: #fa7070;
+        background-color: #E27063;
         color: white;
-        font-size: clamp(12px, 1vw, 16px);
+        font-size: clamp(14px, 1.2vw, 18px);
         font-weight: 600;
-        padding: 6px 14px;
-        border-radius: 20px;
+        padding: 8px 16px;
+        border-radius: 24px;
         text-transform: uppercase;
         letter-spacing: 1px;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
     }
     h1 {
-        font-size: clamp(44px, 6vw, 86px);
+        font-size: clamp(52px, 7vw, 96px);
         font-weight: 700;
-        color: #1a1b1e;
-        margin: 0 0 15px 0;
+        color: #2F2F2F;
+        margin: 0 0 20px 0;
         line-height: 1.1;
     }
     .subtitle {
-        font-size: clamp(19px, 2.2vw, 32px);
-        color: #5f6368;
-        margin: 0 0 35px 0;
+        font-size: clamp(22px, 2.5vw, 36px);
+        color: #6C6C6C;
+        margin: 0 0 40px 0;
         line-height: 1.4;
-        max-width: 80%;
+        max-width: 85%;
     }
     .metadata {
-        font-size: clamp(12px, 1.1vw, 16px);
-        color: #80868b;
-        border-top: 1px solid #e0d6cc;
-        padding-top: 15px;
+        font-size: clamp(14px, 1.2vw, 18px);
+        color: #8C8C8C;
+        border-top: 1px solid #D7C7B9;
+        padding-top: 20px;
         width: 100%;
     }
 
@@ -78,18 +78,186 @@
     .slide-header {
         margin-bottom: 20px;
     }
-    .slide-header h2 {
-        font-size: clamp(28px, 3.4vw, 52px);
+        .slide-header h2 {
+        font-size: clamp(32px, 3.8vw, 56px);
         font-weight: 700;
-        color: #202124;
-        margin: 0 0 8px 0;
-        border-left: 5px solid #fa7070;
-        padding-left: 12px;
+        color: #3E3C3B;
+        margin: 0 0 10px 0;
+        border-left: 6px solid #E27063;
+        padding-left: 15px;
     }
     .slide-header p {
-        font-size: clamp(15px, 1.4vw, 22px);
-        color: #5f6368;
+        font-size: clamp(16px, 1.6vw, 24px);
+        color: #6C6C6C;
         margin: 0;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        width: 100%;
+        margin-top: 30px;
+    }
+    .col-2 {
+        /* Removed table-cell styles */
+        width: auto;
+        padding-right: 0;
+        padding-left: 0;
+    }
+    .col-2:last-child {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .card {
+        background: #ffffff;
+        border: 1px solid #D7C7B9;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .card h3 {
+        font-size: clamp(19px, 1.8vw, 28px);
+        font-weight: 600;
+        color: #2F2F2F;
+        margin: 0 0 10px 0;
+    }
+    .card p {
+        font-size: clamp(15px, 1.25vw, 20px);
+        color: #5A5A5A;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .stat-box {
+        background: #E27063;
+        color: white;
+        border-radius: 16px;
+        padding: 25px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .stat-box .number {
+        font-size: clamp(36px, 4.5vw, 68px);
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .stat-box .label {
+        font-size: clamp(14px, 1.3vw, 20px);
+        opacity: 0.9;
+    }
+
+    .footer-note {
+        position: absolute;
+        bottom: clamp(30px, 6vh, 60px);
+        left: clamp(50px, 10vw, 120px);
+        right: clamp(50px, 10vw, 120px);
+        font-size: 14px;
+        color: #8C8C8C;
+        text-align: right;
+        border-top: 1px solid #D7C7B9;
+        padding-top: 15px;
+    }
+
+    .deck-controls {
+        position: fixed;
+        right: clamp(20px, 3vw, 40px);
+        bottom: clamp(20px, 3vw, 40px);
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(62, 60, 59, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 999px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(20px);
+    }
+    .deck-controls button {
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 18px;
+        min-width: 80px;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 700;
+        color: white;
+        background: rgba(255, 255, 255, 0.16);
+        cursor: pointer;
+    }
+    .deck-controls button.primary {
+        background: #E27063;
+    }
+    .deck-controls button:disabled {
+        cursor: default;
+        opacity: 0.4;
+    }
+    .deck-progress {
+        min-width: 54px;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 14px;
+        font-weight: 700;
+        text-align: center;
+    }
+    @media (max-width: 760px) {
+        .slide {
+            padding: 40px 30px 100px;
+        }
+        .slide-1 .content {
+            margin-top: 100px;
+        }
+        .subtitle {
+            max-width: 100%;
+        }
+        .grid-2 {
+            display: block;
+            gap: 0;
+        }
+        .col-2,
+        .col-2:last-child {
+            padding: 0;
+        }
+        .card {
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+        .footer-note {
+            left: 30px;
+            right: 30px;
+            bottom: 96px;
+        }
+        .deck-controls {
+            left: 15px;
+            right: 15px;
+            justify-content: space-between;
+        }
+        .deck-controls button {
+            min-width: 0;
+            padding: 12px 14px;
+        }
+    }
+    @media print {
+        body {
+            overflow: visible;
+        }
+        .slide,
+        .slide.active {
+            display: block;
+            width: 297mm;
+            height: 210mm;
+            padding: 30mm 40mm;
+            page-break-after: always;
+        }
+        .slide-1 .content {
+            margin-top: 50mm;
+        }
+        .deck-controls {
+            display: none;
+        }
     }
 
     /* Grid Layouts */
@@ -111,7 +279,7 @@
 
     .card {
         background: #ffffff;
-        border: 1px solid #eadbc8;
+        border: 1px solid #EADBC8;
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 15px;
@@ -120,18 +288,18 @@
     .card h3 {
         font-size: clamp(17px, 1.6vw, 25px);
         font-weight: 600;
-        color: #1a1b1e;
+        color: #2F2F2F;
         margin: 0 0 8px 0;
     }
     .card p {
         font-size: clamp(14px, 1.18vw, 19px);
-        color: #4a4b4e;
+        color: #5A5A5A;
         margin: 0;
         line-height: 1.5;
     }
 
     .stat-box {
-        background: #fa7070;
+        background: #E27063;
         color: white;
         border-radius: 12px;
         padding: 20px;
@@ -154,9 +322,9 @@
         left: clamp(30px, 7vw, 96px);
         right: clamp(30px, 7vw, 96px);
         font-size: 12px;
-        color: #80868b;
+        color: #8C8C8C;
         text-align: right;
-        border-top: 1px solid #e0d6cc;
+        border-top: 1px solid #D7C7B9;
         padding-top: 10px;
     }
 
@@ -169,7 +337,7 @@
         align-items: center;
         gap: 10px;
         padding: 10px;
-        background: rgba(32, 33, 36, 0.86);
+        background: rgba(62, 60, 59, 0.86);
         border: 1px solid rgba(255, 255, 255, 0.16);
         border-radius: 999px;
         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
@@ -188,7 +356,7 @@
         cursor: pointer;
     }
     .deck-controls button.primary {
-        background: #fa7070;
+        background: #E27063;
     }
     .deck-controls button:disabled {
         cursor: default;
@@ -279,18 +447,18 @@
         <p>Why traditional creative software fails lighter users and independent businesses.</p>
     </div>
     <div class="grid-2">
-        <div class="card" style="background: #fff8f5; border-color: #f7dcd4;">
+        <div class="card" style="background: #FFF8F0; border-color: #EADBC8;">
             <h3>The Subscription Trap</h3>
-            <p>Adobe Lightroom locks essential creative tools behind a permanent $10+/month tollbooth. For hobbyists, casual photographers, and small business owners, recurring fees add up fast for software they only use a few times a week.</p>
+            <p>Adobe Lightroom locks essential creative tools behind a permanent $12+/month tollbooth. For hobbyists, casual photographers, and small business owners, recurring fees add up fast for software they only use a few times a week.</p>
         </div>
-        <div class="card" style="background: #fff8f5; border-color: #f7dcd4;">
-            <h3>Cloud Cruft & Complexity</h3>
+        <div class="card" style="background: #FFF8F0; border-color: #EADBC8;">
+            <h3>Cloud & Complexity</h3>
             <p>Enterprise bloat, heavy cloud syncing layers, and complex interface hierarchies make simple editing feel exhausting. It prioritizes corporate workflows over fast, local results.</p>
         </div>
     </div>
-    <div class="card" style="margin-top: 10px;">
-        <h3>The Psychological Friction (The Maya Dilemma)</h3>
-        <p>Lighter users don't just struggle with software mechanics; they battle internal friction. Buying looks or tools offers a quick emotional lift, but leaves projects unfinished when the initial dopamine fades.</p>
+    <div class="card" style="background: #FFF8F0; border-color: #EADBC8; margin-top: 20px;">
+        <h3>Market Opportunity: The Photo Industry</h3>
+        <p>The global photography services market was valued at <strong>USD 11.04 billion in 2023</strong> and is projected to grow significantly, indicating a vast market for creative tools that empower independent photographers and small businesses.</p>
     </div>
     <div class="footer-note">Slide 2 of 5</div>
 </div>
@@ -311,7 +479,7 @@
             <p>Instead of locking styles behind paid marketplaces or in-app purchases, all community presets are fully open-source. Discover, tweak, and share custom looks freely without financial friction.</p>
         </div>
     </div>
-    <div class="card" style="background: #f4eae0; border-color: #e0d6cc; margin-top: 10px;">
+    <div class="card" style="background: #F4ECE6; border-color: #EADBC8; margin-top: 10px;">
         <h3>The Business Model</h3>
         <p><strong>One-time purchase.</strong> Buy it once, own it forever across all your Apple devices. No monthly ransom, no unexpected invoice increases, and complete creative independence.</p>
     </div>
@@ -335,7 +503,7 @@
                 <div class="number">0.86</div>
                 <div class="label">Impulsivity Index (High Urge-to-Action Gap)</div>
             </div>
-            <div class="stat-box" style="background: #e8877c;">
+            <div class="stat-box" style="background: #E27063;">
                 <div class="number">0.79</div>
                 <div class="label">Future Discounting (Distant Consequences Marked Down)</div>
             </div>
@@ -360,7 +528,7 @@
             <p>Instead of abstract warnings or billing limits, the app translates time and value into tangible milestones: showing how completing her current editing queue protects her time and brings her closer to her quarterly creative goals.</p>
         </div>
     </div>
-    <div class="card" style="background: #fff8f5; border-color: #f7dcd4; margin-top: 10px; text-align: center;">
+    <div class="card" style="background: #FFF8F0; border-color: #EADBC8; margin-top: 10px; text-align: center;">
         <h3>The Result</h3>
         <p>A photo editor that doesn't just save money on subscriptions—it actively supports the user's emotional and creative workflow. <strong>The data is the constraint, not the idea.</strong></p>
     </div>
