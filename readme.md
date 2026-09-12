@@ -17,3 +17,6 @@ we want an app icon/logo.
 
 we want the photos we import to stay in the app across relaunches, not just for the current session. 
 
+the app needs to actually work well on iPhone screen sizes too, not just iPad — the project already targets both (TARGETED_DEVICE_FAMILY = "1,2"), but the editor UI (the adjustments panel especially) was only really verified on iPad and is currently unusable on phone-sized screens (panel goes off-screen). 
+
+
