@@ -29,10 +29,24 @@ struct EditedPhoto: Identifiable {
         self.thumbnail = thumbnail
     }
 
+    init(
+        imageSource: ImageSource,
+        settings: AdjustmentSettings = .neutral,
+        thumbnail: UIImage? = nil
+    ) {
+        self.imageSource = imageSource
+        self.settings = settings
+        self.thumbnail = thumbnail
+    }
+
+    /// Whether this photo's source is a RAW file, decoded via `CIRAWFilter`
+    /// rather than the generic `CIImage(data:)` path.
+    var isRAW: Bool { imageSource.isRAW }
+
     /// Full-resolution image, kept untouched so export quality isn't
     /// limited by the downsampled preview.
-    var sourceImage: CIImage { imageSource.fullResolutionImage() }
+    var sourceImage: CIImage { imageSource.fullResolutionImage(adjustments: settings) }
 
     /// Downsampled image used to drive the fast live preview while editing.
-    var previewSourceImage: CIImage { imageSource.previewImage() }
+    var previewSourceImage: CIImage { imageSource.previewImage(adjustments: settings) }
 }

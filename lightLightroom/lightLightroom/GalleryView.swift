@@ -26,7 +26,11 @@ struct GalleryView: View {
             }
             .padding()
         }
+        .background(Color.black.ignoresSafeArea())
+        .scrollContentBackground(.hidden)
         .navigationTitle("Gallery")
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .preferredColorScheme(.dark)
         .overlay {
             if photos.isEmpty {
                 ContentUnavailableView(

@@ -27,7 +27,7 @@ enum ExportService {
             throw ExportError.authorizationDenied
         }
 
-        let processed = AdjustmentPipeline.apply(photo.settings, to: photo.sourceImage)
+        let processed = AdjustmentPipeline.apply(photo.settings, to: photo.sourceImage, isRAW: photo.isRAW)
         guard let cgImage = context.createCGImage(processed, from: processed.extent) else {
             throw ExportError.renderFailed
         }

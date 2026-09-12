@@ -28,7 +28,11 @@ enum ImageSource {
     }
 
     /// A fast, possibly downsampled render suitable for live preview.
-    func previewImage() -> CIImage {
+    ///
+    /// - Parameter adjustments: Applied natively via `CIRAWFilter` when this
+    ///   source is RAW (see `applyRAWAdjustments`); ignored otherwise, since
+    ///   non-RAW images get the same adjustments later in `AdjustmentPipeline`.
+    func previewImage(adjustments: AdjustmentSettings) -> CIImage {
         switch self {
         case .decoded(_, let preview):
             return preview
@@ -40,13 +44,18 @@ enum ImageSource {
             guard let filter = CIRAWFilter(imageData: data, identifierHint: nil) else {
                 return .empty()
             }
+            Self.applyRAWAdjustments(adjustments, to: filter)
             filter.scaleFactor = Float(previewScale)
             return filter.outputImage ?? .empty()
         }
     }
 
     /// The full-resolution render, used for export.
-    func fullResolutionImage() -> CIImage {
+    ///
+    /// - Parameter adjustments: Applied natively via `CIRAWFilter` when this
+    ///   source is RAW (see `applyRAWAdjustments`); ignored otherwise, since
+    ///   non-RAW images get the same adjustments later in `AdjustmentPipeline`.
+    func fullResolutionImage(adjustments: AdjustmentSettings) -> CIImage {
         switch self {
         case .decoded(let full, _):
             return full
@@ -57,8 +66,43 @@ enum ImageSource {
             guard let filter = CIRAWFilter(imageData: data, identifierHint: nil) else {
                 return .empty()
             }
+            Self.applyRAWAdjustments(adjustments, to: filter)
             filter.scaleFactor = 1
             return filter.outputImage ?? .empty()
+        }
+    }
+
+    /// Applies temperature/tint/exposure/detail controls to a `CIRAWFilter`
+    /// before its `outputImage` is read, so RAW files get native white-
+    /// balance, exposure, and detail controls instead of the generic
+    /// post-render path used for JPEG/HEIC. Temperature and tint are deltas
+    /// from the as-shot neutral the filter reports, not absolute values.
+    ///
+    /// The RAW detail controls (sharpness, noise reduction, detail, lens
+    /// correction) are only set when they differ from their
+    /// `AdjustmentSettings` default, leaving CoreImage's own per-image
+    /// defaults alone until the user actually moves a slider — the same
+    /// leave-alone-until-touched behavior already used for the neutral
+    /// white balance above.
+    private static func applyRAWAdjustments(_ adjustments: AdjustmentSettings, to filter: CIRAWFilter) {
+        filter.neutralTemperature = filter.neutralTemperature + Float(adjustments.temperature / 100) * 2000
+        filter.neutralTint = filter.neutralTint + Float(adjustments.tint / 100) * 150
+        filter.exposure = Float(adjustments.exposure)
+
+        if adjustments.sharpness != 0 {
+            filter.sharpnessAmount = Float(adjustments.sharpness / 100)
+        }
+        if adjustments.luminanceNoiseReduction != 0 {
+            filter.luminanceNoiseReductionAmount = Float(adjustments.luminanceNoiseReduction / 100)
+        }
+        if adjustments.colorNoiseReduction != 0 {
+            filter.colorNoiseReductionAmount = Float(adjustments.colorNoiseReduction / 100)
+        }
+        if adjustments.detailAmount != 0 {
+            filter.detailAmount = Float(adjustments.detailAmount / 100) * 3
+        }
+        if adjustments.lensCorrectionEnabled != AdjustmentSettings.neutral.lensCorrectionEnabled {
+            filter.isLensCorrectionEnabled = adjustments.lensCorrectionEnabled
         }
     }
 
