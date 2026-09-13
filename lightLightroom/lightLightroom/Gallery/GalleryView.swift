@@ -26,7 +26,7 @@ struct GalleryView: View {
             }
             .padding()
         }
-        .background(Color.black.ignoresSafeArea())
+        .background(Glass.photoBackdrop.ignoresSafeArea())
         .scrollContentBackground(.hidden)
         .navigationTitle("Gallery")
         .toolbarBackground(.hidden, for: .navigationBar)

@@ -48,7 +48,7 @@ extension ContentView {
             guard !Task.isCancelled, let output = render() else { return }
             await MainActor.run {
                 if animate {
-                    withAnimation(.easeInOut(duration: 0.2)) { renderedPreview = output.image }
+                    withAnimation(Glass.spring) { renderedPreview = output.image }
                 } else {
                     renderedPreview = output.image
                 }

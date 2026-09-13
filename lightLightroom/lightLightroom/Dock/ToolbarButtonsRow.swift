@@ -18,6 +18,7 @@ struct ToolbarButtonsRow: View {
     let onToggleBeforeAfter: () -> Void
     let onSelectPhoto: (EditedPhoto.ID) -> Void
     let onEnterCrop: () -> Void
+    let onImportFromFile: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -37,6 +38,18 @@ struct ToolbarButtonsRow: View {
                 DockIcon("photo.on.rectangle")
             }
             .accessibilityLabel("Import Photo")
+
+            #if targetEnvironment(macCatalyst)
+            // Desktop only: Photos covers the mobile case, but on Mac
+            // people also keep RAW/JPEG files straight on disk outside any
+            // Photos library — this opens the standard Finder-backed file
+            // picker for those.
+            if showsDividers { DockDivider() }
+            Button(action: onImportFromFile) {
+                DockIcon("folder")
+            }
+            .accessibilityLabel("Import from Files")
+            #endif
 
             if showsDividers { DockDivider() }
 

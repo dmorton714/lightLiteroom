@@ -47,6 +47,10 @@
 		5AB106F1DF35ABD8832C606B /* FilmProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AF29ED6C418FA2FDD360A1 /* FilmProfile.swift */; };
 		BB239454BCDEFF15246854AB /* PhotoRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AAC0E6D2BFADF452E934FD /* PhotoRecord.swift */; };
 		C6E932C92D6225D704896DD4 /* AdjustmentSliderRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ADC19A0EF6D2D04CC751A99 /* AdjustmentSliderRow.swift */; };
+		8F32534B8423D4CFED551593 /* AdjustmentsPanelView+Content.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A50448185D6782851496269 /* AdjustmentsPanelView+Content.swift */; };
+		CDD56BA834086077BC61B07E /* AdjustmentsPanelView+Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53A7852157C646BEE9EF2DF9 /* AdjustmentsPanelView+Debug.swift */; };
+		F4CE90FA0EB3CE54B03E20A5 /* AdjustmentsPanelView+Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = A089FC7BA151A0B30EF635AD /* AdjustmentsPanelView+Header.swift */; };
+		CD0FDEE432167A419EF50D9D /* AdjustmentsPanelView+Resize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17093FC38519CF2AD3427689 /* AdjustmentsPanelView+Resize.swift */; };
 		F7044BA6DAEDD7F70239F70C /* AdjustmentsPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47BA660C3BAF24F77FCB4ADC /* AdjustmentsPanelView.swift */; };
 		076DAD407A015B89E12210C8 /* HistogramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F9895FA85CBB799FDD3CFF /* HistogramView.swift */; };
 		5D9F5DDA22686DE9215E17FE /* PanelHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CBFC4F8E0DC360E6A23C405 /* PanelHeader.swift */; };
@@ -138,6 +142,10 @@
 		28AF29ED6C418FA2FDD360A1 /* FilmProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FilmProfile.swift"; sourceTree = "<group>"; };
 		A3AAC0E6D2BFADF452E934FD /* PhotoRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PhotoRecord.swift"; sourceTree = "<group>"; };
 		3ADC19A0EF6D2D04CC751A99 /* AdjustmentSliderRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentSliderRow.swift"; sourceTree = "<group>"; };
+		0A50448185D6782851496269 /* AdjustmentsPanelView+Content.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentsPanelView+Content.swift"; sourceTree = "<group>"; };
+		53A7852157C646BEE9EF2DF9 /* AdjustmentsPanelView+Debug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentsPanelView+Debug.swift"; sourceTree = "<group>"; };
+		A089FC7BA151A0B30EF635AD /* AdjustmentsPanelView+Header.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentsPanelView+Header.swift"; sourceTree = "<group>"; };
+		17093FC38519CF2AD3427689 /* AdjustmentsPanelView+Resize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentsPanelView+Resize.swift"; sourceTree = "<group>"; };
 		47BA660C3BAF24F77FCB4ADC /* AdjustmentsPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentsPanelView.swift"; sourceTree = "<group>"; };
 		79F9895FA85CBB799FDD3CFF /* HistogramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HistogramView.swift"; sourceTree = "<group>"; };
 		4CBFC4F8E0DC360E6A23C405 /* PanelHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PanelHeader.swift"; sourceTree = "<group>"; };
@@ -311,6 +319,10 @@
 			isa = PBXGroup;
 			children = (
 				3ADC19A0EF6D2D04CC751A99 /* AdjustmentSliderRow.swift */,
+				0A50448185D6782851496269 /* AdjustmentsPanelView+Content.swift */,
+				53A7852157C646BEE9EF2DF9 /* AdjustmentsPanelView+Debug.swift */,
+				A089FC7BA151A0B30EF635AD /* AdjustmentsPanelView+Header.swift */,
+				17093FC38519CF2AD3427689 /* AdjustmentsPanelView+Resize.swift */,
 				47BA660C3BAF24F77FCB4ADC /* AdjustmentsPanelView.swift */,
 				79F9895FA85CBB799FDD3CFF /* HistogramView.swift */,
 				4CBFC4F8E0DC360E6A23C405 /* PanelHeader.swift */,
@@ -508,6 +520,10 @@
 				5AB106F1DF35ABD8832C606B /* FilmProfile.swift in Sources */,
 				BB239454BCDEFF15246854AB /* PhotoRecord.swift in Sources */,
 				C6E932C92D6225D704896DD4 /* AdjustmentSliderRow.swift in Sources */,
+				8F32534B8423D4CFED551593 /* AdjustmentsPanelView+Content.swift in Sources */,
+				CDD56BA834086077BC61B07E /* AdjustmentsPanelView+Debug.swift in Sources */,
+				F4CE90FA0EB3CE54B03E20A5 /* AdjustmentsPanelView+Header.swift in Sources */,
+				CD0FDEE432167A419EF50D9D /* AdjustmentsPanelView+Resize.swift in Sources */,
 				F7044BA6DAEDD7F70239F70C /* AdjustmentsPanelView.swift in Sources */,
 				076DAD407A015B89E12210C8 /* HistogramView.swift in Sources */,
 				5D9F5DDA22686DE9215E17FE /* PanelHeader.swift in Sources */,

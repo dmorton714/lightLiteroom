@@ -1,14 +1,18 @@
 import SwiftUI
 
-/// Pure sizing/clamping math for the free-floating adjustments panel — kept
-/// separate from `AdjustmentsPanelView`'s view body so the two can't drift
-/// out of sync and so this math is testable on its own.
+/// Pure sizing math for the free-floating adjustments panel — kept separate
+/// from `AdjustmentsPanelView`'s view body so the two can't drift out of
+/// sync and so this math is testable on its own. Position (where the panel
+/// sits, and how dragging it is clamped) is a separate concern that lives
+/// directly on `AdjustmentsPanelView` — see its `restingCenter`/`liveCenter`.
 ///
-/// `availableSize` is the space this panel's ancestor was actually given by
-/// SwiftUI — which already excludes the bottom dock, since the dock reserves
-/// its own space via `.safeAreaInset(edge: .bottom)` higher up the tree (see
-/// `ContentView+Layout`). None of the math below needs to subtract the
-/// dock's height a second time.
+/// `availableSize` is `ContentView+Layout`'s `safeSize` — the
+/// `GeometryReader`'s size *already combined with* `safeAreaInsets`, so it
+/// correctly excludes the bottom dock's current height (the dock reserves
+/// its own space via `.safeAreaInset(edge: .bottom)` higher up the tree).
+/// Raw `geometry.size` alone does NOT exclude the dock — `.size` and
+/// `.safeAreaInsets` are separate, complementary properties by design — so
+/// don't swap this back to `geometry.size` directly at the call site.
 struct PanelLayout {
     let isLandscape: Bool
     let isCompact: Bool
@@ -44,35 +48,5 @@ struct PanelLayout {
         let proposed = usableHeight * fraction
         let maxAllowed = usableHeight - Glass.panelMinVisibleMargin
         return max(0, min(proposed, maxAllowed))
-    }
-
-    /// Keeps the free-floating panel from being dragged fully off-screen:
-    /// the panel's approximate footprint (built from `maxHeight`, so the
-    /// two can't disagree) must keep at least `Glass.panelMinVisibleMargin`
-    /// points within `availableSize` in every direction. Approximate, not a
-    /// measured frame — enough to stop the panel from being lost off-screen
-    /// without any extra geometry-reading infrastructure.
-    func clampedOffset(_ proposed: CGSize) -> CGSize {
-        // Phone-sized screens don't have room to spare for a free-floating
-        // panel; always docking there (no drag) sidesteps a whole class of
-        // edge cases in this formula.
-        guard !isCompact else { return .zero }
-        let panelWidth = width
-        let panelHeight = isPanelCollapsed ? Glass.collapsedPanelHeight : maxHeight
-        let totalHeight = panelHeight + edgePadding
-
-        let defaultX = isLandscape ? availableSize.width - panelWidth - edgePadding : (availableSize.width - panelWidth) / 2
-        let defaultY = isLandscape ? max(edgePadding, (availableSize.height - totalHeight) / 2) : availableSize.height - totalHeight
-
-        let margin = Glass.panelMinVisibleMargin
-        let minDX = margin - panelWidth - defaultX
-        let maxDX = availableSize.width - margin - defaultX
-        let minDY = margin - panelHeight - defaultY
-        let maxDY = availableSize.height - margin - defaultY
-
-        return CGSize(
-            width: min(max(proposed.width, minDX), maxDX),
-            height: min(max(proposed.height, minDY), maxDY)
-        )
     }
 }

@@ -13,7 +13,7 @@ struct PanelHeader: View {
     var body: some View {
         VStack(spacing: Glass.compactSpacing) {
             Capsule()
-                .fill(.white.opacity(0.35))
+                .fill(.secondary)
                 .frame(width: Glass.panelHandleSize.width, height: Glass.panelHandleSize.height)
             HStack(spacing: Glass.compactSpacing) {
                 Text("Adjust")

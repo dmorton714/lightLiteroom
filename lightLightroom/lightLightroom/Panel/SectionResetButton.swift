@@ -9,7 +9,8 @@ struct SectionResetButton: View {
 
     var body: some View {
         Button("Reset", action: action)
-            .font(.caption.weight(.medium))
+            .buttonStyle(.plain)
+            .font(.caption.weight(.semibold))
             .foregroundStyle(.secondary)
     }
 }

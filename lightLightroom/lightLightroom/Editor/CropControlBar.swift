@@ -23,8 +23,11 @@ struct CropControlBar: View {
             }
             HStack {
                 Button("Cancel", role: .cancel, action: onCancel)
+                    .buttonStyle(.plain)
                 Spacer()
-                Button("Done", action: onDone).fontWeight(.semibold)
+                Button("Done", action: onDone)
+                    .buttonStyle(.plain)
+                    .fontWeight(.semibold)
             }
         }
         .padding(Glass.spacing)

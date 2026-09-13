@@ -10,7 +10,7 @@ struct PhotoLayerView: View {
 
     var body: some View {
         ZStack {
-            Color.black
+            Glass.photoBackdrop
             if let renderedPreview {
                 Image(uiImage: renderedPreview)
                     .resizable()

@@ -38,6 +38,7 @@ struct BottomDockView: View {
     let onSelectPhoto: (EditedPhoto.ID) -> Void
     let onApplyToSelected: () -> Void
     let onEnterCrop: () -> Void
+    let onImportFromFile: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -61,7 +62,8 @@ struct BottomDockView: View {
                 onExport: onExport,
                 onToggleBeforeAfter: onToggleBeforeAfter,
                 onSelectPhoto: onSelectPhoto,
-                onEnterCrop: onEnterCrop
+                onEnterCrop: onEnterCrop,
+                onImportFromFile: onImportFromFile
             )
             if isFilmstripVisible && !photos.isEmpty {
                 Group {

@@ -23,6 +23,7 @@ struct ContentView: View {
     @State var batchApplyMessage: String?
     @State var isZoomedIntoPhoto = false
     @State var cropState = CropModeState()
+    @State var isShowingFileImporter = false
 
     @Environment(\.accessibilityReduceMotion) var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
@@ -42,6 +43,11 @@ struct ContentView: View {
         .task { loadPersistedPhotos() }
         .onChange(of: selectedItem) { _, newItem in
             Task { await loadImage(from: newItem) }
+        }
+        .fileImporter(isPresented: $isShowingFileImporter, allowedContentTypes: [.image, .rawImage]) { result in
+            if case .success(let url) = result {
+                Task { await loadImage(from: url) }
+            }
         }
         .onChange(of: currentPhoto?.settings) { _, _ in
             isShowingOriginal = false

@@ -18,7 +18,7 @@ struct ZoomPanLayout {
     /// Keeps the zoomed photo from panning far enough that its edge clears
     /// the container — approximate (assumes the image roughly fills
     /// `containerSize`, as `.scaledToFit()` does before any zoom), not a
-    /// measured content frame, same spirit as `PanelLayout.clampedOffset`.
+    /// measured content frame.
     func clampedOffset(_ proposed: CGSize) -> CGSize {
         guard scale > ZoomPanLayout.minScale else { return .zero }
         let maxX = containerSize.width * (scale - 1) / 2

@@ -43,8 +43,15 @@ struct CropOverlayView: View {
     var body: some View {
         ZStack {
             CropMaskView(hole: viewRect, containerSize: containerSize)
+            // A stroked Rectangle's hit-testing area is its thin outline
+            // path, not its interior — dragging from the middle of the box
+            // (the natural way to move it) did nothing. `.contentShape`
+            // on a filled-but-clear layer makes the whole interior
+            // draggable while the visible border stays just the stroke.
             Rectangle()
-                .stroke(.white, lineWidth: 1.5)
+                .fill(Color.clear)
+                .contentShape(Rectangle())
+                .overlay(Rectangle().stroke(.white, lineWidth: 1.5))
                 .frame(width: viewRect.width, height: viewRect.height)
                 .position(x: viewRect.midX, y: viewRect.midY)
                 .gesture(moveGesture)

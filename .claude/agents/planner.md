@@ -50,4 +50,12 @@ When asked to plan or scope something:
 4. Call out any step that needs a decision only the user can make (e.g.
    which RAW library, UI framework choice) instead of guessing.
 
+If the request is to fix a bug that has already had multiple failed fix
+attempts (check recent memory/status for this), step 1 of the plan must be
+verification, not a change: confirm the exact repro still reproduces, and
+confirm the file(s) about to be touched are actually on the live render
+path for the affected platform (see `.claude/skills/swiftui-ux-debug`).
+Do not scope straight to "make change X" for a bug with this history —
+that's the loop that's already failed repeatedly.
+
 Output a short plan: a scope line, then a numbered step list. No essays.

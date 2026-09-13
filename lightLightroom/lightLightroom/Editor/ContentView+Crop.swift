@@ -8,12 +8,16 @@ extension ContentView {
     func enterCropMode() {
         guard let photo = currentPhoto else { return }
         isZoomedIntoPhoto = false
-        cropState = CropModeState(isActive: true, aspect: photo.settings.crop.aspect, draftRect: photo.settings.crop.rect)
+        withAnimation(reduceMotion ? nil : Glass.spring) {
+            cropState = CropModeState(isActive: true, aspect: photo.settings.crop.aspect, draftRect: photo.settings.crop.rect)
+        }
     }
 
     /// Discards the draft; `AdjustmentSettings.crop` is untouched.
     func cancelCropMode() {
-        cropState.isActive = false
+        withAnimation(reduceMotion ? nil : Glass.spring) {
+            cropState.isActive = false
+        }
     }
 
     /// Commits the draft rect into the photo's settings. `scheduleRender()`
@@ -22,6 +26,8 @@ extension ContentView {
     func commitCropMode() {
         guard let currentPhotoIndex else { return }
         photos[currentPhotoIndex].settings.crop = CropSettings(rect: cropState.draftRect, aspect: cropState.aspect)
-        cropState.isActive = false
+        withAnimation(reduceMotion ? nil : Glass.spring) {
+            cropState.isActive = false
+        }
     }
 }

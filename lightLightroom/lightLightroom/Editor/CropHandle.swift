@@ -28,11 +28,18 @@ enum CropHandlePosition: CaseIterable {
 /// `CropOverlayView+Gestures`.
 struct CropHandle: View {
     static let diameter: CGFloat = 20
+    /// The visible circle alone (20pt) is well under Apple's 44pt minimum
+    /// touch target, making it genuinely hard to grab precisely — this
+    /// gives it a larger invisible hit area, centered on the same point,
+    /// without changing how it looks.
+    static let hitAreaDiameter: CGFloat = 44
 
     var body: some View {
         Circle()
             .fill(.white)
             .frame(width: Self.diameter, height: Self.diameter)
             .shadow(color: .black.opacity(0.4), radius: 3)
+            .frame(width: Self.hitAreaDiameter, height: Self.hitAreaDiameter)
+            .contentShape(Circle())
     }
 }

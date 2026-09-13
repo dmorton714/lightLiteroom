@@ -37,5 +37,6 @@ struct FilmstripSelectionBar: View {
             .disabled(selectedFilmstripPhotoIDs.isEmpty)
             .fontWeight(.semibold)
         }
+        .buttonStyle(.plain)
     }
 }

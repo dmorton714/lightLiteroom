@@ -1,11 +1,11 @@
 import SwiftUI
 
 extension CropOverlayView {
-    /// Handles shown for the current aspect: all eight for `.free`, just
-    /// the four corners otherwise, since aspect-locked resizing only makes
-    /// sense anchored at a corner (see `CropGeometry.dragged`).
+    /// All eight handles, every aspect mode — edge handles resize toward
+    /// the opposite edge and re-fit the other dimension to match a locked
+    /// aspect (see `CropGeometry.dragged`), same as corners do.
     var handles: some View {
-        ForEach(aspect == .free ? CropHandlePosition.allCases : CropHandlePosition.corners, id: \.self) { handle in
+        ForEach(CropHandlePosition.allCases, id: \.self) { handle in
             CropHandle()
                 .position(handle.point(in: viewRect))
                 .gesture(handleGesture(handle))

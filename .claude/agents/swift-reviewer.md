@@ -19,6 +19,15 @@ Review for, in order of severity:
    extension/helper.
 3. Unneeded complexity — abstractions, config, or generality nothing in
    this app currently needs.
+4. For a UI/gesture/layout bug fix specifically: confirm the changed view
+   is actually reachable/rendered on the reported platform and size class —
+   trace it from the root view, don't take the diff's file choice on faith.
+   A correct-looking fix in a file that isn't even on the live render path
+   is not a fix, and this project has been burned by exactly that pattern
+   before. Also call out, explicitly and separately from the new diff, any
+   pre-existing uncommitted change in the same area that affects the bug
+   under investigation — even if this task didn't introduce it, bundling it
+   in unlabeled confounds the next test.
 
 Then testing:
 - If no test exists for changed logic, write the smallest XCTest that fails

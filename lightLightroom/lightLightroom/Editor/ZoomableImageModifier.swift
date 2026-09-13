@@ -12,6 +12,8 @@ struct ZoomableImageModifier: ViewModifier {
     @GestureState private var gestureScale: CGFloat = 1
     @GestureState private var gestureOffset: CGSize = .zero
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func body(content: Content) -> some View {
         GeometryReader { geometry in
             content
@@ -36,15 +38,28 @@ struct ZoomableImageModifier: ViewModifier {
 
     private func pan(in containerSize: CGSize) -> some Gesture {
         DragGesture()
-            .updating($gestureOffset) { value, state, _ in state = value.translation }
+            .updating($gestureOffset) { value, state, _ in
+                // Without this guard, `gestureOffset` (and thus the visible
+                // `.offset()` above) tracked every drag on screen even at
+                // 1x — including a drag that started on the adjustments
+                // panel, which sits on top of this full-bleed photo layer.
+                // `.simultaneousGesture` recognizes based on frame overlap,
+                // not on-screen z-order, so panel drags were also panning
+                // the photo underneath in real time, only snapping back
+                // once released (since `clampedOffset` forces `.zero` at
+                // `scale <= 1`) — a major source of visible stutter/glitch.
+                guard scale > ZoomPanLayout.minScale else { return }
+                state = value.translation
+            }
             .onEnded { value in
+                guard scale > ZoomPanLayout.minScale else { return }
                 let layout = ZoomPanLayout(containerSize: containerSize, scale: scale)
                 offset = layout.clampedOffset(offset + value.translation)
             }
     }
 
     private func reset() {
-        withAnimation(.easeInOut) {
+        withAnimation(reduceMotion ? nil : Glass.spring) {
             scale = ZoomPanLayout.minScale
             offset = .zero
         }
