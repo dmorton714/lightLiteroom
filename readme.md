@@ -29,12 +29,18 @@ If a single target fails, `./run` prints which one and why, and still attempts t
 - `lightLightroom/scripts/sync_project.py` — regenerates `project.pbxproj`'s file references from disk. Run it (or just use `./run`, which calls it automatically) any time you add, move, or delete a `.swift` file by hand instead of through Xcode.
 - `edit-imporvement.md` — the working build log/tracker for the editing pipeline: what's done, what's in progress, known limitations. Check it before starting new pipeline work.
 
-## Original goals (project brief)
+## License and contribution agreement
 
-- Read in RAW and JPEG photos.
-- Basic RAW-aware adjustments: white balance, exposure, contrast, highlight recovery, shadow recovery, blacks, whites.
-- Export edited images back to the device.
-- A gallery to see imported/edited photos.
-- An app icon/logo.
-- Photos persist across relaunches, not just the current session.
-- Works well on both iPhone and iPad screen sizes, not just iPad.
+lightLightroom is open source under the GNU Affero General Public License v3.0 only (`AGPL-3.0-only`). See `LICENSE` for the full license text.
+
+The goal is to build one stronger shared photo editor, not a cloud of nearly identical competing apps. True open source licenses must allow people to inspect, modify, and fork the code, so this project does not try to ban forks. Instead, the license and project norms are designed to keep improvements flowing back into the commons:
+
+- If you distribute a modified version, or make a modified network-accessible version available to users, you must provide the corresponding source code under the same AGPL-3.0-only terms.
+- Please contribute useful fixes and features upstream with pull requests before maintaining a long-running public fork.
+- Do not use the lightLightroom name, logos, icons, screenshots, or product identity for a separate app, fork, store listing, service, or commercial offering without written permission, except where required for attribution or license compliance.
+- Clearly rename and distinguish any public modified version that is not accepted into this repository.
+
+By submitting a pull request, patch, issue attachment, design asset, or other contribution to this repository, you agree that your contribution is licensed under `AGPL-3.0-only` and that you have the right to contribute it. You also agree that the maintainers may include, modify, and redistribute your contribution as part of this project under that license.
+
+This README describes the intended project culture and licensing posture, but it is not legal advice. If you need commercial terms, private licensing, or brand-use permission, contact the maintainers before shipping.
+
