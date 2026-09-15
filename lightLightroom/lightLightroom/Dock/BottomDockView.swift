@@ -30,6 +30,7 @@ struct BottomDockView: View {
     @Binding var isPanelCollapsed: Bool
     @Binding var isFilmstripMultiSelect: Bool
     @Binding var selectedFilmstripPhotoIDs: Set<EditedPhoto.ID>
+    @Binding var isShowingGallery: Bool
     let onExport: () -> Void
     let onToggleBeforeAfter: () -> Void
     /// Called whenever a photo is selected from the gallery or filmstrip,
@@ -59,6 +60,7 @@ struct BottomDockView: View {
                 isPanelCollapsed: $isPanelCollapsed,
                 isFilmstripMultiSelect: $isFilmstripMultiSelect,
                 selectedFilmstripPhotoIDs: $selectedFilmstripPhotoIDs,
+                isShowingGallery: $isShowingGallery,
                 onExport: onExport,
                 onToggleBeforeAfter: onToggleBeforeAfter,
                 onSelectPhoto: onSelectPhoto,

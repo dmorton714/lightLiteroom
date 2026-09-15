@@ -100,6 +100,7 @@ extension ContentView {
             isPanelCollapsed: $isPanelCollapsed,
             isFilmstripMultiSelect: $isFilmstripMultiSelect,
             selectedFilmstripPhotoIDs: $selectedFilmstripPhotoIDs,
+            isShowingGallery: $isShowingGallery,
             onExport: exportCurrentPhoto,
             onToggleBeforeAfter: toggleBeforeAfter,
             onSelectPhoto: { _ in scheduleRender() },

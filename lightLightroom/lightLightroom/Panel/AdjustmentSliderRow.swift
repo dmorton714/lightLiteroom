@@ -12,24 +12,33 @@ struct AdjustmentSliderRow: View {
     var defaultValue: Double = 0
     var trackGradient: [Color]?
 
+    // On iPhone (compact width) the panel defaults to showing several rows
+    // at once, so each row's label line is trimmed down (smaller font,
+    // tighter spacing) to fit more sliders without scrolling. The `Slider`
+    // control itself is left untouched so its ~44pt touch target doesn't
+    // shrink — only the surrounding label/value chrome gets denser.
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    private var isCompact: Bool { horizontalSizeClass == .compact }
+    private var labelFont: Font { isCompact ? .caption : .subheadline }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: Glass.compactSpacing / 2) {
+        VStack(alignment: .leading, spacing: isCompact ? 2 : Glass.compactSpacing / 2) {
             HStack(spacing: Glass.compactSpacing) {
                 Image(systemName: icon)
-                    .font(.subheadline)
+                    .font(labelFont)
                     .foregroundStyle(.secondary)
                     .frame(width: 18)
                 Text(title)
-                    .font(.subheadline.weight(.medium))
+                    .font(labelFont.weight(.medium))
                 Spacer(minLength: Glass.compactSpacing)
                 Text(value.wrappedValue, format: .number.precision(.fractionLength(1)))
-                    .font(.subheadline.monospacedDigit())
+                    .font(labelFont.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .fixedSize()
                     .layoutPriority(1)
                     .padding(.horizontal, Glass.compactSpacing)
-                    .padding(.vertical, 2)
+                    .padding(.vertical, isCompact ? 1 : 2)
                     .background(.white.opacity(0.12), in: Capsule())
             }
             ZStack {

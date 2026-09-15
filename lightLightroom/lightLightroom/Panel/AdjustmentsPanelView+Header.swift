@@ -8,17 +8,13 @@ extension AdjustmentsPanelView {
     ///
     /// Attached directly to the header's own content with plain
     /// `.gesture()` — not, as a previous version had it, `.highPriorityGesture()`
-    /// on a separate `Color.clear` `.background()` layer. That split never
-    /// actually fired: confirmed on-device (a real mouse drag on Mac Catalyst,
-    /// `dragEventCount` staying at 0) that a `.background()` layer's gesture
-    /// is not reliably given touches that land on the view it's a background
-    /// of. The fix is the standard SwiftUI pattern instead: SwiftUI already
-    /// gives a *descendant's own gesture* priority over an *ancestor's plain
-    /// `.gesture()`* by default — so `ResetAllButton` (a real `Button`,
-    /// nested inside `PanelHeader`) keeps winning its own taps automatically,
-    /// no separate background trick required. `.highPriorityGesture()` is
-    /// what broke that default and swallowed the button's taps in the
-    /// original version; plain `.gesture()` here doesn't have that problem.
+    /// on a separate `Color.clear` `.background()` layer, which never
+    /// actually received touches (confirmed on-device with a real mouse
+    /// drag on Mac Catalyst). SwiftUI already gives a *descendant's own
+    /// gesture* priority over an *ancestor's plain `.gesture()`* by default
+    /// — so `ResetAllButton` (a real `Button`, nested inside `PanelHeader`)
+    /// keeps winning its own taps automatically, no separate background
+    /// trick required.
     var header: some View {
         PanelHeader(isRAW: isRAW, isPanelCollapsed: isPanelCollapsed) {
             settings = .neutral
@@ -28,15 +24,7 @@ extension AdjustmentsPanelView {
                 .updating($dragTranslation) { value, state, _ in
                     state = value.translation
                 }
-                #if DEBUG
-                // TEMPORARY — see `AdjustmentsPanelView+Debug.swift`.
-                // Proves whether this gesture receives touches at all.
-                .onChanged { _ in dragEventCount += 1 }
-                #endif
                 .onEnded { value in
-                    #if DEBUG
-                    dragEventCount += 1
-                    #endif
                     let distance = hypot(value.translation.width, value.translation.height)
                     if distance < Glass.dragTapThreshold {
                         withAnimation(reduceMotion ? nil : Glass.spring) {

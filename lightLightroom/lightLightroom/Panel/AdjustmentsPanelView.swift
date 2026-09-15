@@ -47,13 +47,6 @@ struct AdjustmentsPanelView: View {
     @State var manualSize: CGSize?
     @GestureState var resizeTranslation: CGSize = .zero
 
-    #if DEBUG
-    // TEMPORARY — instrumentation for the iPhone drag/tap dead-gesture
-    // report; remove once confirmed fixed on-device. See
-    // `AdjustmentsPanelView+Debug.swift`.
-    @State var dragEventCount = 0
-    #endif
-
     @Environment(\.accessibilityReduceMotion) var reduceMotion
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
 
@@ -75,20 +68,24 @@ struct AdjustmentsPanelView: View {
     }
 
     /// The panel's actual on-screen size right now, including any in-flight
-    /// resize drag. The handle sits at the top-trailing corner, so dragging
-    /// it right grows width (pulling the right edge outward) and dragging
-    /// it *up* grows height (pulling the top edge upward) — a negative
-    /// vertical translation has to *increase* height, the opposite sign
-    /// from a plain translation add.
+    /// resize drag. The handle sits at the top-leading corner, so dragging
+    /// it *left* grows width (pulling the left edge outward) and dragging
+    /// it *up* grows height (pulling the top edge upward) — both are the
+    /// opposite sign from a plain translation add.
     var currentSize: CGSize {
         guard !isPanelCollapsed else { return defaultSize }
-        return clampedSize(CGSize(width: defaultSize.width + resizeTranslation.width, height: defaultSize.height - resizeTranslation.height))
+        return clampedSize(CGSize(width: defaultSize.width - resizeTranslation.width, height: defaultSize.height - resizeTranslation.height))
     }
 
     func clampedSize(_ size: CGSize) -> CGSize {
+        // Width still keeps a margin (there's rarely a reason to fill the
+        // full screen width, and it protects the resize handle itself from
+        // being pushed past the opposite edge). Height has no ceiling
+        // beyond the screen itself — on a tall phone especially, "make it
+        // taller" should mean taller, not stop short for no visible reason.
         CGSize(
             width: min(max(size.width, Glass.panelMinWidth), availableSize.width - Glass.panelMinVisibleMargin),
-            height: min(max(size.height, Glass.panelMinHeight), availableSize.height - Glass.panelMinVisibleMargin)
+            height: min(max(size.height, Glass.panelMinHeight), availableSize.height)
         )
     }
 
@@ -110,14 +107,14 @@ struct AdjustmentsPanelView: View {
     /// it in sync.
     ///
     /// Also folds in the resize anchor shift: growing/shrinking from the
-    /// top-trailing corner keeps the opposite (bottom-leading) corner fixed
+    /// top-leading corner keeps the opposite (bottom-trailing) corner fixed
     /// in place, which means the panel's *center* has to move by half the
-    /// size change too — otherwise the bottom edge would drift as the panel
-    /// grows, instead of staying anchored the way dragging a real window's
-    /// corner does.
+    /// size change too — otherwise the bottom-right edge would drift as the
+    /// panel grows, instead of staying anchored the way dragging a real
+    /// window's corner does.
     var liveCenter: CGPoint {
         let sizeDelta = CGSize(width: currentSize.width - defaultSize.width, height: currentSize.height - defaultSize.height)
-        let resizeShift = CGSize(width: sizeDelta.width / 2, height: -sizeDelta.height / 2)
+        let resizeShift = CGSize(width: -sizeDelta.width / 2, height: -sizeDelta.height / 2)
         return clamped((center ?? restingCenter) + dragTranslation + resizeShift)
     }
 
@@ -151,13 +148,11 @@ struct AdjustmentsPanelView: View {
         .frame(width: currentSize.width)
         .frame(height: isPanelCollapsed ? nil : currentSize.height)
         .glassDockedPanel(corners: corners, isInteracting: dragTranslation != .zero || resizeTranslation != .zero)
-        .overlay(alignment: .topTrailing) {
+        .overlay(alignment: .topLeading) {
             if !isPanelCollapsed { resizeHandle }
         }
+        .overlay(alignment: .topTrailing) { collapseButton }
         .position(liveCenter)
-        #if DEBUG
-        .overlay(alignment: .topLeading) { debugOverlay }
-        #endif
         .transaction { transaction in
             // While actively dragging or resizing, the panel must track the
             // finger 1:1 every frame — any inherited animation would make

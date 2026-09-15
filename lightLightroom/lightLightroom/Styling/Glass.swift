@@ -31,8 +31,8 @@ enum Glass {
     static let panelMinHeight: CGFloat = 160
     static let panelMaxHeightFractionPortrait: CGFloat = 0.42
     static let panelMaxHeightFractionLandscape: CGFloat = 0.78
-    static let panelMaxHeightFractionPortraitCompact: CGFloat = 0.38
-    static let panelMaxHeightFractionLandscapeCompact: CGFloat = 0.62
+    static let panelMaxHeightFractionPortraitCompact: CGFloat = 0.56
+    static let panelMaxHeightFractionLandscapeCompact: CGFloat = 0.72
     static let panelHandleSize = CGSize(width: 36, height: 5)
 
     /// Estimated header-only height, used for drag clamping while collapsed.

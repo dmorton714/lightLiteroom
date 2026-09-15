@@ -45,11 +45,21 @@ extension ContentView {
             data: data
         )
 
-        withAnimation(reduceMotion ? nil : Glass.spring) {
-            photos.append(photo)
-            currentPhotoID = photo.id
+        // `await MainActor.run`: `loadTransferable` above can resume this
+        // function off the main thread, and everything past that point
+        // mutates `@State` (`photos`, `currentPhotoID`) or reads/writes
+        // other main-actor state via `scheduleRender`/`startThumbnailCatchup`
+        // — SwiftUI state mutation off the main thread is undefined
+        // behavior and can silently produce a wrong/blank render. Same
+        // pattern `ContentView+Rendering.swift`'s `renderOffMain` already
+        // uses for the same reason.
+        await MainActor.run {
+            withAnimation(reduceMotion ? nil : Glass.spring) {
+                photos.append(photo)
+                currentPhotoID = photo.id
+            }
+            scheduleRender()
+            startThumbnailCatchup()
         }
-        scheduleRender()
-        startThumbnailCatchup()
     }
 }

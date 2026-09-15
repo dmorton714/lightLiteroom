@@ -14,6 +14,7 @@ struct ToolbarButtonsRow: View {
     @Binding var isPanelCollapsed: Bool
     @Binding var isFilmstripMultiSelect: Bool
     @Binding var selectedFilmstripPhotoIDs: Set<EditedPhoto.ID>
+    @Binding var isShowingGallery: Bool
     let onExport: () -> Void
     let onToggleBeforeAfter: () -> Void
     let onSelectPhoto: (EditedPhoto.ID) -> Void
@@ -81,13 +82,8 @@ struct ToolbarButtonsRow: View {
 
             if showsDividers { DockDivider() }
 
-            NavigationLink {
-                GalleryView(photos: photos, currentPhotoID: currentPhotoID) { id in
-                    withAnimation(reduceMotion ? nil : Glass.spring) {
-                        currentPhotoID = id
-                    }
-                    onSelectPhoto(id)
-                }
+            Button {
+                isShowingGallery = true
             } label: {
                 DockIcon("square.grid.2x2")
             }

@@ -48,7 +48,6 @@
 		BB239454BCDEFF15246854AB /* PhotoRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AAC0E6D2BFADF452E934FD /* PhotoRecord.swift */; };
 		C6E932C92D6225D704896DD4 /* AdjustmentSliderRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ADC19A0EF6D2D04CC751A99 /* AdjustmentSliderRow.swift */; };
 		8F32534B8423D4CFED551593 /* AdjustmentsPanelView+Content.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A50448185D6782851496269 /* AdjustmentsPanelView+Content.swift */; };
-		CDD56BA834086077BC61B07E /* AdjustmentsPanelView+Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53A7852157C646BEE9EF2DF9 /* AdjustmentsPanelView+Debug.swift */; };
 		F4CE90FA0EB3CE54B03E20A5 /* AdjustmentsPanelView+Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = A089FC7BA151A0B30EF635AD /* AdjustmentsPanelView+Header.swift */; };
 		CD0FDEE432167A419EF50D9D /* AdjustmentsPanelView+Resize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17093FC38519CF2AD3427689 /* AdjustmentsPanelView+Resize.swift */; };
 		F7044BA6DAEDD7F70239F70C /* AdjustmentsPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47BA660C3BAF24F77FCB4ADC /* AdjustmentsPanelView.swift */; };
@@ -90,6 +89,7 @@
 		BCD70A3892D742B3050F7E46 /* PreviewRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 510975F5E19AD25B31C24AA2 /* PreviewRenderer.swift */; };
 		C798B92A30769E9161B419DA /* RAWPreviewCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20839DEFC07096E468BF72E /* RAWPreviewCache.swift */; };
 		9ED742887486340E16BFAE0E /* ThumbnailCatchupQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70BBD83E388CB9212F65937 /* ThumbnailCatchupQueue.swift */; };
+		8FE3987D52AEA5EC70A6AC33 /* Binding+Negated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866430E5DFC2EDE5FE5547F0 /* Binding+Negated.swift */; };
 		0048549D2ABFD578A65C3F29 /* CGSize+Add.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64530185D1F17251E4ECEB1C /* CGSize+Add.swift */; };
 		BA47A767907498002C408A59 /* DarkDock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E6AFF8CD3E5B3718B80192 /* DarkDock.swift */; };
 		6F0D9954638B30DAE461AD6F /* Glass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C2391A5DC0D47E33206D85 /* Glass.swift */; };
@@ -143,7 +143,6 @@
 		A3AAC0E6D2BFADF452E934FD /* PhotoRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PhotoRecord.swift"; sourceTree = "<group>"; };
 		3ADC19A0EF6D2D04CC751A99 /* AdjustmentSliderRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentSliderRow.swift"; sourceTree = "<group>"; };
 		0A50448185D6782851496269 /* AdjustmentsPanelView+Content.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentsPanelView+Content.swift"; sourceTree = "<group>"; };
-		53A7852157C646BEE9EF2DF9 /* AdjustmentsPanelView+Debug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentsPanelView+Debug.swift"; sourceTree = "<group>"; };
 		A089FC7BA151A0B30EF635AD /* AdjustmentsPanelView+Header.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentsPanelView+Header.swift"; sourceTree = "<group>"; };
 		17093FC38519CF2AD3427689 /* AdjustmentsPanelView+Resize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentsPanelView+Resize.swift"; sourceTree = "<group>"; };
 		47BA660C3BAF24F77FCB4ADC /* AdjustmentsPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentsPanelView.swift"; sourceTree = "<group>"; };
@@ -185,6 +184,7 @@
 		510975F5E19AD25B31C24AA2 /* PreviewRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PreviewRenderer.swift"; sourceTree = "<group>"; };
 		B20839DEFC07096E468BF72E /* RAWPreviewCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RAWPreviewCache.swift"; sourceTree = "<group>"; };
 		A70BBD83E388CB9212F65937 /* ThumbnailCatchupQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThumbnailCatchupQueue.swift"; sourceTree = "<group>"; };
+		866430E5DFC2EDE5FE5547F0 /* Binding+Negated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Binding+Negated.swift"; sourceTree = "<group>"; };
 		64530185D1F17251E4ECEB1C /* CGSize+Add.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGSize+Add.swift"; sourceTree = "<group>"; };
 		45E6AFF8CD3E5B3718B80192 /* DarkDock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DarkDock.swift"; sourceTree = "<group>"; };
 		B8C2391A5DC0D47E33206D85 /* Glass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Glass.swift"; sourceTree = "<group>"; };
@@ -320,7 +320,6 @@
 			children = (
 				3ADC19A0EF6D2D04CC751A99 /* AdjustmentSliderRow.swift */,
 				0A50448185D6782851496269 /* AdjustmentsPanelView+Content.swift */,
-				53A7852157C646BEE9EF2DF9 /* AdjustmentsPanelView+Debug.swift */,
 				A089FC7BA151A0B30EF635AD /* AdjustmentsPanelView+Header.swift */,
 				17093FC38519CF2AD3427689 /* AdjustmentsPanelView+Resize.swift */,
 				47BA660C3BAF24F77FCB4ADC /* AdjustmentsPanelView.swift */,
@@ -391,6 +390,7 @@
 		1E8ABEBA26A12C6F03FB8AE9 /* Styling */ = {
 			isa = PBXGroup;
 			children = (
+				866430E5DFC2EDE5FE5547F0 /* Binding+Negated.swift */,
 				64530185D1F17251E4ECEB1C /* CGSize+Add.swift */,
 				45E6AFF8CD3E5B3718B80192 /* DarkDock.swift */,
 				B8C2391A5DC0D47E33206D85 /* Glass.swift */,
@@ -521,7 +521,6 @@
 				BB239454BCDEFF15246854AB /* PhotoRecord.swift in Sources */,
 				C6E932C92D6225D704896DD4 /* AdjustmentSliderRow.swift in Sources */,
 				8F32534B8423D4CFED551593 /* AdjustmentsPanelView+Content.swift in Sources */,
-				CDD56BA834086077BC61B07E /* AdjustmentsPanelView+Debug.swift in Sources */,
 				F4CE90FA0EB3CE54B03E20A5 /* AdjustmentsPanelView+Header.swift in Sources */,
 				CD0FDEE432167A419EF50D9D /* AdjustmentsPanelView+Resize.swift in Sources */,
 				F7044BA6DAEDD7F70239F70C /* AdjustmentsPanelView.swift in Sources */,
@@ -563,6 +562,7 @@
 				BCD70A3892D742B3050F7E46 /* PreviewRenderer.swift in Sources */,
 				C798B92A30769E9161B419DA /* RAWPreviewCache.swift in Sources */,
 				9ED742887486340E16BFAE0E /* ThumbnailCatchupQueue.swift in Sources */,
+				8FE3987D52AEA5EC70A6AC33 /* Binding+Negated.swift in Sources */,
 				0048549D2ABFD578A65C3F29 /* CGSize+Add.swift in Sources */,
 				BA47A767907498002C408A59 /* DarkDock.swift in Sources */,
 				6F0D9954638B30DAE461AD6F /* Glass.swift in Sources */,

@@ -22,10 +22,14 @@ struct BasicAdjustmentsSection: View {
             )
             AdjustmentSliderRow(title: "Exposure", icon: "sun.max", value: $settings.exposure, range: AdjustmentSettings.exposureRange)
             AdjustmentSliderRow(title: "Contrast", icon: "circle.lefthalf.filled", value: $settings.contrast, range: AdjustmentSettings.percentRange)
-            AdjustmentSliderRow(title: "Highlights", icon: "sun.min", value: $settings.highlights, range: AdjustmentSettings.percentRange)
-            AdjustmentSliderRow(title: "Shadows", icon: "moon", value: $settings.shadows, range: AdjustmentSettings.percentRange)
-            AdjustmentSliderRow(title: "Blacks", icon: "circle.fill", value: $settings.blacks, range: AdjustmentSettings.percentRange)
-            AdjustmentSliderRow(title: "Whites", icon: "circle", value: $settings.whites, range: AdjustmentSettings.percentRange)
+            // `.negated`: drag direction flipped per the user's request —
+            // the stored `settings.highlights`/etc. sign convention (and
+            // everything reading it — the pipeline, persistence, reset)
+            // is untouched, only how dragging this slider maps to it.
+            AdjustmentSliderRow(title: "Highlights", icon: "sun.min", value: $settings.highlights.negated, range: AdjustmentSettings.percentRange)
+            AdjustmentSliderRow(title: "Shadows", icon: "moon", value: $settings.shadows.negated, range: AdjustmentSettings.percentRange)
+            AdjustmentSliderRow(title: "Blacks", icon: "circle.fill", value: $settings.blacks.negated, range: AdjustmentSettings.percentRange)
+            AdjustmentSliderRow(title: "Whites", icon: "circle", value: $settings.whites.negated, range: AdjustmentSettings.percentRange)
         }
     }
 }
