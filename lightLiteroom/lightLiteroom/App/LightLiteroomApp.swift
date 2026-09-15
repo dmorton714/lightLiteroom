@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct LightLightroomApp: App {
+struct LightLiteroomApp: App {
     init() {
         #if DEBUG
         AdjustmentPipeline.debugVerifyToneRangesAreDistinct()

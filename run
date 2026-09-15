@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Builds and launches lightLightroom on iPhone Simulator, iPad Simulator,
+# Builds and launches lightLiteroom on iPhone Simulator, iPad Simulator,
 # and Mac Catalyst — all three, every time, so a demo never starts from a
 # stale build. Usage: ./run
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$ROOT/lightLightroom"
-SCHEME="lightLightroom"
-BUNDLE_ID="com.dannymorton.lightLightroom"
+PROJECT_DIR="$ROOT/lightLiteroom"
+SCHEME="lightLiteroom"
+BUNDLE_ID="com.dannymorton.lightLiteroom"
 DERIVED="$PROJECT_DIR/build"
 
 cd "$PROJECT_DIR"
@@ -43,7 +43,7 @@ build_and_run_sim() {
   step "Building for $label"
   xcodebuild -scheme "$SCHEME" -destination "id=$udid" -derivedDataPath "$out" build \
     | grep -E "error:|BUILD SUCCEEDED|BUILD FAILED" || true
-  local app="$out/Build/Products/Debug-iphonesimulator/lightLightroom.app"
+  local app="$out/Build/Products/Debug-iphonesimulator/lightLiteroom.app"
   [ -d "$app" ] || fail "$label build did not produce an app bundle"
 
   step "Booting $label simulator"
@@ -72,7 +72,7 @@ xcodebuild -scheme "$SCHEME" -destination 'platform=macOS,variant=Mac Catalyst' 
   CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM="" \
   build | grep -E "error:|BUILD SUCCEEDED|BUILD FAILED" || true
 
-MAC_APP="$DERIVED/mac/Build/Products/Debug-maccatalyst/lightLightroom.app"
+MAC_APP="$DERIVED/mac/Build/Products/Debug-maccatalyst/lightLiteroom.app"
 [ -d "$MAC_APP" ] || fail "Mac Catalyst build did not produce an app bundle"
 
 # Mac Catalyst reads from the real, local Photos library (not simulator
@@ -88,7 +88,7 @@ if [ -d "$IMAGES_DIR" ]; then
 fi
 
 step "Launching on Mac"
-if killall lightLightroom >/dev/null 2>&1; then
+if killall lightLiteroom >/dev/null 2>&1; then
   sleep 1  # let Launch Services finish tearing down the old instance
 fi
 open -n "$MAC_APP" || fail "Mac launch failed"

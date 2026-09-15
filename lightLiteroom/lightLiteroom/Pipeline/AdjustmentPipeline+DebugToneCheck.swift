@@ -5,7 +5,7 @@ extension AdjustmentPipeline {
     /// Regression guard for the half-dead-range clamping bug: renders each
     /// tone control at -100/0/100 on a swatch in its effective tonal region
     /// and asserts both extremes differ from neutral. Called once from
-    /// `LightLightroomApp.init` in debug builds only.
+    /// `LightLiteroomApp.init` in debug builds only.
     static func debugVerifyToneRangesAreDistinct() {
         let context = CIContext()
         func swatch(_ value: Double) -> CIImage {

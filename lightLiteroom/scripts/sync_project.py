@@ -3,15 +3,15 @@
 
 Run after adding, moving, or deleting Swift files:
     python3 scripts/sync_project.py
-Folders under lightLightroom/ become Xcode groups with matching paths.
+Folders under lightLiteroom/ become Xcode groups with matching paths.
 """
 import hashlib
 import os
 import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "lightLightroom")
-PBX = os.path.join(ROOT, "lightLightroom.xcodeproj", "project.pbxproj")
+SRC = os.path.join(ROOT, "lightLiteroom")
+PBX = os.path.join(ROOT, "lightLiteroom.xcodeproj", "project.pbxproj")
 
 MAIN_GROUP = "678B30FAF98DABE79481BF94"
 SRC_GROUP = "908CE232B31CDB20C3D2C330"
@@ -48,8 +48,8 @@ file_refs = [
 ] + [
     f"\t\t{ASSETS_REF} /* Assets.xcassets */ = {{isa = PBXFileReference; "
     f"lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = \"<group>\"; }};",
-    f"\t\t{APP_REF} /* lightLightroom.app */ = {{isa = PBXFileReference; explicitFileType = wrapper.application; "
-    f"includeInIndex = 0; path = lightLightroom.app; sourceTree = BUILT_PRODUCTS_DIR; }};",
+    f"\t\t{APP_REF} /* lightLiteroom.app */ = {{isa = PBXFileReference; explicitFileType = wrapper.application; "
+    f"includeInIndex = 0; path = lightLiteroom.app; sourceTree = BUILT_PRODUCTS_DIR; }};",
 ]
 
 groups = {}  # relative dir -> [(child id, child comment)]
@@ -89,11 +89,11 @@ def group_block(gid, comment, children, path=None, name=None):
     return "\n".join(lines)
 
 
-group_blocks = [group_block(MAIN_GROUP, None, [(SRC_GROUP, "lightLightroom"), (PRODUCTS_GROUP, "Products")])]
+group_blocks = [group_block(MAIN_GROUP, None, [(SRC_GROUP, "lightLiteroom"), (PRODUCTS_GROUP, "Products")])]
 for d in sorted(groups):
-    label = "lightLightroom" if d == "" else os.path.basename(d)
+    label = "lightLiteroom" if d == "" else os.path.basename(d)
     group_blocks.append(group_block(group_id(d), label, groups[d], path=label))
-group_blocks.append(group_block(PRODUCTS_GROUP, "Products", [(APP_REF, "lightLightroom.app")], name="Products"))
+group_blocks.append(group_block(PRODUCTS_GROUP, "Products", [(APP_REF, "lightLiteroom.app")], name="Products"))
 
 sources = [f"\t\t\t\t{uid('build:' + p)} /* {os.path.basename(p)} in Sources */," for p in swift]
 

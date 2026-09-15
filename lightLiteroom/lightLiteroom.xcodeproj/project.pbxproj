@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		26395198BFB0EB5695844BED /* LightLightroomApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64A9F502A942435BDF1A1D73 /* LightLightroomApp.swift */; };
+		EE11128A66B0B35986FD2BAD /* LightLiteroomApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8440EFBBDE85ECE10FC360FF /* LightLiteroomApp.swift */; };
 		B78D194AAE9517DD40EEEF60 /* PhotoThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6892A9A36CFB260B6311ADA7 /* PhotoThumbnail.swift */; };
 		DD1F8B1E851FBEE73BD2B753 /* BottomDockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 895F0C3AC4442739A29C920F /* BottomDockView.swift */; };
 		19D5391F99D0B53662D10146 /* DockIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = E66F03C66FA40D69C110C41A /* DockIcon.swift */; };
@@ -102,7 +102,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		64A9F502A942435BDF1A1D73 /* LightLightroomApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LightLightroomApp.swift"; sourceTree = "<group>"; };
+		8440EFBBDE85ECE10FC360FF /* LightLiteroomApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LightLiteroomApp.swift"; sourceTree = "<group>"; };
 		6892A9A36CFB260B6311ADA7 /* PhotoThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PhotoThumbnail.swift"; sourceTree = "<group>"; };
 		895F0C3AC4442739A29C920F /* BottomDockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BottomDockView.swift"; sourceTree = "<group>"; };
 		E66F03C66FA40D69C110C41A /* DockIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DockIcon.swift"; sourceTree = "<group>"; };
@@ -194,7 +194,7 @@
 		79AD512B023D95BC7E69C2AD /* GlassPressStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GlassPressStyle.swift"; sourceTree = "<group>"; };
 		78ECD4F441AF92524E3EB781 /* MessageAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MessageAlert.swift"; sourceTree = "<group>"; };
 		D7F39220FC6CFD38BAC84F6F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		160403660171653E2A419F33 /* lightLightroom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = lightLightroom.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		160403660171653E2A419F33 /* lightLiteroom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = lightLiteroom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -211,12 +211,12 @@
 		678B30FAF98DABE79481BF94 = {
 			isa = PBXGroup;
 			children = (
-				908CE232B31CDB20C3D2C330 /* lightLightroom */,
+				908CE232B31CDB20C3D2C330 /* lightLiteroom */,
 				A0AA5AED9517D111D5B59539 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		908CE232B31CDB20C3D2C330 /* lightLightroom */ = {
+		908CE232B31CDB20C3D2C330 /* lightLiteroom */ = {
 			isa = PBXGroup;
 			children = (
 				D1D0524B025E57AFFF263442 /* App */,
@@ -231,13 +231,13 @@
 				1E8ABEBA26A12C6F03FB8AE9 /* Styling */,
 				D7F39220FC6CFD38BAC84F6F /* Assets.xcassets */,
 			);
-			path = lightLightroom;
+			path = lightLiteroom;
 			sourceTree = "<group>";
 		};
 		D1D0524B025E57AFFF263442 /* App */ = {
 			isa = PBXGroup;
 			children = (
-				64A9F502A942435BDF1A1D73 /* LightLightroomApp.swift */,
+				8440EFBBDE85ECE10FC360FF /* LightLiteroomApp.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -406,7 +406,7 @@
 		A0AA5AED9517D111D5B59539 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				160403660171653E2A419F33 /* lightLightroom.app */,
+				160403660171653E2A419F33 /* lightLiteroom.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -414,9 +414,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		144B1CB7B6756274C50F96FE /* lightLightroom */ = {
+		144B1CB7B6756274C50F96FE /* lightLiteroom */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F6A437A375D958A0F90BF77B /* Build configuration list for PBXNativeTarget "lightLightroom" */;
+			buildConfigurationList = F6A437A375D958A0F90BF77B /* Build configuration list for PBXNativeTarget "lightLiteroom" */;
 			buildPhases = (
 				C08E6F832EDBDA911DDA1021 /* Sources */,
 				5ABEDC17A63F5CE21A8147C9 /* Frameworks */,
@@ -426,9 +426,9 @@
 			);
 			dependencies = (
 			);
-			name = lightLightroom;
-			productName = lightLightroom;
-			productReference = 160403660171653E2A419F33 /* lightLightroom.app */;
+			name = lightLiteroom;
+			productName = lightLiteroom;
+			productReference = 160403660171653E2A419F33 /* lightLiteroom.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -446,7 +446,7 @@
 					};
 				};
 			};
-			buildConfigurationList = F766E741FA2B105364FF5951 /* Build configuration list for PBXProject "lightLightroom" */;
+			buildConfigurationList = F766E741FA2B105364FF5951 /* Build configuration list for PBXProject "lightLiteroom" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -459,7 +459,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				144B1CB7B6756274C50F96FE /* lightLightroom */,
+				144B1CB7B6756274C50F96FE /* lightLiteroom */,
 			);
 		};
 /* End PBXProject section */
@@ -480,7 +480,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				26395198BFB0EB5695844BED /* LightLightroomApp.swift in Sources */,
+				EE11128A66B0B35986FD2BAD /* LightLiteroomApp.swift in Sources */,
 				B78D194AAE9517DD40EEEF60 /* PhotoThumbnail.swift in Sources */,
 				DD1F8B1E851FBEE73BD2B753 /* BottomDockView.swift in Sources */,
 				19D5391F99D0B53662D10146 /* DockIcon.swift in Sources */,
@@ -647,7 +647,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "lightLightroom saves your edited photos to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "lightLiteroom saves your edited photos to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -658,8 +658,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dannymorton.lightLightroom;
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.dannymorton.lightLightroom.mac;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dannymorton.lightLiteroom;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.dannymorton.lightLiteroom.mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -676,7 +676,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "lightLightroom saves your edited photos to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "lightLiteroom saves your edited photos to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -687,8 +687,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dannymorton.lightLightroom;
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.dannymorton.lightLightroom.mac;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dannymorton.lightLiteroom;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.dannymorton.lightLiteroom.mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -755,7 +755,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F6A437A375D958A0F90BF77B /* Build configuration list for PBXNativeTarget "lightLightroom" */ = {
+		F6A437A375D958A0F90BF77B /* Build configuration list for PBXNativeTarget "lightLiteroom" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				62648EB80CE0BBF3FFF774BF /* Debug */,
@@ -764,7 +764,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		F766E741FA2B105364FF5951 /* Build configuration list for PBXProject "lightLightroom" */ = {
+		F766E741FA2B105364FF5951 /* Build configuration list for PBXProject "lightLiteroom" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				20B3C307B99117D6B5E186D9 /* Debug */,
